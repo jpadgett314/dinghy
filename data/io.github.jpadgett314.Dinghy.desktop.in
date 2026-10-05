@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=Dinghy
+Exec=dinghy
+Icon=io.github.jpadgett314.Dinghy
+Terminal=false
+Type=Application
+Categories=Utility;
+Keywords=GTK;
+StartupNotify=true
+DBusActivatable=true

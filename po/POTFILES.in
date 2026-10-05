@@ -1,0 +1,6 @@
+# List of source files containing translatable strings.
+# Please keep this file sorted alphabetically.
+data/io.github.jpadgett314.Dinghy.desktop.in
+data/io.github.jpadgett314.Dinghy.metainfo.xml.in
+data/io.github.jpadgett314.Dinghy.gschema.xml
+src/window.ui
