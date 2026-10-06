@@ -20,6 +20,7 @@
 
 mod application;
 mod config;
+mod preferences;
 mod window;
 
 use self::application::DinghyApplication;

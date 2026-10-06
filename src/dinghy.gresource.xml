@@ -2,6 +2,7 @@
 <gresources>
   <gresource prefix="/io/github/jpadgett314/Dinghy">
     <file preprocess="xml-stripblanks">window.ui</file>
+    <file preprocess="xml-stripblanks">preferences.ui</file>
     <file preprocess="xml-stripblanks">shortcuts-dialog.ui</file>
   </gresource>
 </gresources>

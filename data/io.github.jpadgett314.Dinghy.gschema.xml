@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <schemalist gettext-domain="dinghy">
 	<schema id="io.github.jpadgett314.Dinghy" path="/io/github/jpadgett314/Dinghy/">
+    <key name="server-url" type="s">
+      <default>'http://localhost:9090'</default>
+    </key>
+    <key name="api-token" type="s">
+      <default>''</default>
+    </key>
 	</schema>
 </schemalist>

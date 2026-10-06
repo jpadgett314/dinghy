@@ -24,6 +24,7 @@ use adw::subclass::prelude::*;
 use gtk::{gio, glib};
 
 use crate::config::VERSION;
+use crate::preferences::PreferencesDialog;
 use crate::DinghyWindow;
 
 mod imp {
@@ -92,7 +93,10 @@ impl DinghyApplication {
         let about_action = gio::ActionEntry::builder("about")
             .activate(move |app: &Self, _, _| app.show_about())
             .build();
-        self.add_action_entries([quit_action, about_action]);
+        let preferences_action = gio::ActionEntry::builder("preferences")
+            .activate(move |app: &Self, _, _| app.show_preferences())
+            .build();
+        self.add_action_entries([quit_action, about_action, preferences_action]);
     }
 
     fn show_about(&self) {
@@ -109,5 +113,14 @@ impl DinghyApplication {
             .build();
 
         about.present(Some(&window));
+    }
+
+    fn show_preferences(&self) {
+        let window = self.active_window().unwrap();
+        let dialog = PreferencesDialog::new();
+        let settings = gio::Settings::new("io.github.jpadgett314.Dinghy");
+
+        dialog.bind_settings(&settings);
+        dialog.present(Some(&window));
     }
 }
