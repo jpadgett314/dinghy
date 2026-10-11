@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <requires lib="gtk" version="4.0"/>
+  <requires lib="Adw" version="1.0"/>
+  <template class="BookmarkRow" parent="AdwActionRow">
+    <property name="name" translatable="yes">Default Name</property>
+    <property name="description" translatable="yes">Default Description</property>
+    <property name="activatable">True</property>
+    <child type="prefix">
+      <object class="GtkImage" id="icon_image">
+        <property name="valign">center</property>
+        <property name="pixel-size">32</property>
+        <property name="icon-name">text-x-generic-symbolic</property>
+      </object>
+    </child>
+  </template>
+</interface>
+
