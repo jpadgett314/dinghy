@@ -23,6 +23,7 @@ use adw::prelude::*;
 use adw::subclass::prelude::*;
 use gtk::{gio, glib};
 
+use crate::bookmark_data::BookmarkData;
 use crate::config::VERSION;
 use crate::preferences::PreferencesDialog;
 use crate::DinghyWindow;
@@ -96,7 +97,10 @@ impl DinghyApplication {
         let preferences_action = gio::ActionEntry::builder("preferences")
             .activate(move |app: &Self, _, _| app.show_preferences())
             .build();
-        self.add_action_entries([quit_action, about_action, preferences_action]);
+        let refresh_bookmarks_action = gio::ActionEntry::builder("refresh-bookmarks")
+            .activate(move |app: &Self, _, _| app.refresh_bookmarks())
+            .build();
+        self.add_action_entries([quit_action, about_action, preferences_action, refresh_bookmarks_action]);
     }
 
     fn show_about(&self) {
@@ -123,4 +127,22 @@ impl DinghyApplication {
         dialog.bind_settings(&settings);
         dialog.present(Some(&window));
     }
+
+    fn refresh_bookmarks(&self) {
+        let window = self
+            .active_window()
+            .and_downcast::<crate::window::DinghyWindow>()
+            .expect("Active window should be a DinghyWindow");
+
+        let bookmarks = vec![
+            BookmarkData {
+                icon_path: None, // Or Some(String::from("/path/to/icon"))
+                name: String::from("Example Name"),
+                description: String::from("Example Description"),
+            },
+        ];
+
+        window.imp().bookmark_list_widget.push(&bookmarks);
+    }
 }
+

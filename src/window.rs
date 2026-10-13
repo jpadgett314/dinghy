@@ -22,15 +22,18 @@ use gtk::prelude::*;
 use adw::subclass::prelude::*;
 use gtk::{gio, glib};
 
+use crate::bookmark_list::BookmarkList;
+
 mod imp {
     use super::*;
 
     #[derive(Debug, Default, gtk::CompositeTemplate)]
     #[template(resource = "/io/github/jpadgett314/Dinghy/window.ui")]
     pub struct DinghyWindow {
-        // Template widgets
         #[template_child]
         pub label: TemplateChild<gtk::Label>,
+        #[template_child]
+        pub bookmark_list_widget: TemplateChild<BookmarkList>,
     }
 
     #[glib::object_subclass]
@@ -68,3 +71,4 @@ impl DinghyWindow {
             .build()
     }
 }
+

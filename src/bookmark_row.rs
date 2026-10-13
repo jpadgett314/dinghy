@@ -1,12 +1,8 @@
 use adw::subclass::prelude::*;
+use adw::prelude::*;
 use gtk::glib;
-use gtk::prelude::*;
 
-pub struct BookmarkData {
-    pub name: String,
-    pub description: String,
-    pub icon_path: Option<String>,
-}
+use crate::bookmark_data::BookmarkData;
 
 mod imp {
     use super::*;
@@ -48,13 +44,21 @@ glib::wrapper! {
 impl BookmarkRow {
     pub fn new(data: &BookmarkData) -> Self {
         let row: Self = glib::Object::new();
-        row.set_name(&data.name);
-        row.set_description(&data.description);
+        row.set_title(&data.name);
+        row.set_subtitle(&data.description);
 
+        /*
         if let Some(ref path) = data.icon_path {
             let imp = row.imp();
             // TODO: use `path`
-            imp.icon_image.set_from_icon_name(Some("text-x-generic-symbolic"));
+            imp.icon_image.set_icon_name(Some("text-x-generic-symbolic"));
+        }
+        */
+
+        if let Some(_) = data.icon_path {
+            let imp = row.imp();
+            // TODO: use `path`
+            imp.icon_image.set_icon_name(Some("text-x-generic-symbolic"));
         }
 
         row

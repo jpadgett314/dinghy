@@ -10,6 +10,13 @@
       <object class="AdwToolbarView">
         <child type="top">
           <object class="AdwHeaderBar">
+            <child>
+              <object class="GtkButton">
+                <property name="icon-name">view-refresh-symbolic</property>
+                <property name="action-name">app.refresh-bookmarks</property>
+                <property name="tooltip-text" translatable="yes">Refresh Bookmarks</property>
+              </object>
+            </child>
             <child type="end">
               <object class="GtkMenuButton">
                 <property name="primary">True</property>
@@ -26,6 +33,13 @@
             <style>
               <class name="title-1"/>
             </style>
+          </object>
+          <object class="GtkScrolledWindow">
+            <property name="vexpand">True</property>
+            <property name="hexpand">True</property>
+            <property name="child">
+              <object class="BookmarkList" id="bookmark_list_widget"/>
+            </property>
           </object>
         </property>
       </object>
