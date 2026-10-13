@@ -1,14 +1,13 @@
-use adw::subclass::prelude::*;
 use adw::prelude::*;
+use adw::subclass::prelude::*;
 use gtk::glib;
-
-use crate::bookmark_data::BookmarkData;
+use linkding::Bookmark;
 
 mod imp {
     use super::*;
 
     #[derive(Debug, Default, gtk::CompositeTemplate)]
-    #[template(file = "bookmark-row.ui")]
+    #[template(file = "bookmark_row.ui")]
     pub struct BookmarkRow {
         #[template_child]
         pub icon_image: gtk::TemplateChild<gtk::Image>,
@@ -38,29 +37,17 @@ mod imp {
 
 glib::wrapper! {
     pub struct BookmarkRow(ObjectSubclass<imp::BookmarkRow>)
-        @extends gtk::Widget, gtk::ListBoxRow, adw::PreferencesRow, adw::ActionRow;
+        @extends gtk::Widget, gtk::ListBoxRow, adw::PreferencesRow, adw::ActionRow,
+        @implements gtk::Accessible, gtk::Actionable, gtk::Buildable, gtk::ConstraintTarget;
 }
 
 impl BookmarkRow {
-    pub fn new(data: &BookmarkData) -> Self {
+    pub fn new(data: &Bookmark) -> Self {
         let row: Self = glib::Object::new();
-        row.set_title(&data.name);
-        row.set_subtitle(&data.description);
-
-        /*
-        if let Some(ref path) = data.icon_path {
-            let imp = row.imp();
-            // TODO: use `path`
-            imp.icon_image.set_icon_name(Some("text-x-generic-symbolic"));
-        }
-        */
-
-        if let Some(_) = data.icon_path {
-            let imp = row.imp();
-            // TODO: use `path`
-            imp.icon_image.set_icon_name(Some("text-x-generic-symbolic"));
-        }
-
+        let title = data.title.trim();
+        row.set_title(if title.is_empty() { &data.url } else { title });
+        row.set_subtitle(&data.description.trim());
+        row.set_tooltip_text(Some(&data.url));
         row
     }
 }

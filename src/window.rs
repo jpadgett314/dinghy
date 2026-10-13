@@ -18,11 +18,11 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-use gtk::prelude::*;
 use adw::subclass::prelude::*;
+use gtk::prelude::*;
 use gtk::{gio, glib};
 
-use crate::bookmark_list::BookmarkList;
+use crate::widgets::BookmarkList;
 
 mod imp {
     use super::*;
@@ -30,8 +30,6 @@ mod imp {
     #[derive(Debug, Default, gtk::CompositeTemplate)]
     #[template(resource = "/io/github/jpadgett314/Dinghy/window.ui")]
     pub struct DinghyWindow {
-        #[template_child]
-        pub label: TemplateChild<gtk::Label>,
         #[template_child]
         pub bookmark_list_widget: TemplateChild<BookmarkList>,
     }
@@ -43,6 +41,7 @@ mod imp {
         type ParentType = adw::ApplicationWindow;
 
         fn class_init(klass: &mut Self::Class) {
+            BookmarkList::ensure_type();
             klass.bind_template();
         }
 
@@ -61,7 +60,8 @@ mod imp {
 glib::wrapper! {
     pub struct DinghyWindow(ObjectSubclass<imp::DinghyWindow>)
         @extends gtk::Widget, gtk::Window, gtk::ApplicationWindow, adw::ApplicationWindow,
-        @implements gio::ActionGroup, gio::ActionMap;
+        @implements gio::ActionGroup, gio::ActionMap, gtk::Accessible, gtk::Buildable,
+                    gtk::ConstraintTarget, gtk::Native, gtk::Root, gtk::ShortcutManager;
 }
 
 impl DinghyWindow {
@@ -71,4 +71,3 @@ impl DinghyWindow {
             .build()
     }
 }
-

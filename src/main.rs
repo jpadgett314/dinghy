@@ -19,13 +19,9 @@
  */
 
 mod application;
-// mod bookmark_model;
-mod bookmark_data;
-mod bookmark_list;
-mod bookmark_row;
 mod config;
-// mod connection;
-mod preferences;
+mod models;
+mod widgets;
 mod window;
 
 use self::application::DinghyApplication;

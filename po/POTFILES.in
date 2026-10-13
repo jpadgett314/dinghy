@@ -3,4 +3,6 @@
 data/io.github.jpadgett314.Dinghy.desktop.in
 data/io.github.jpadgett314.Dinghy.metainfo.xml.in
 data/io.github.jpadgett314.Dinghy.gschema.xml
+src/bookmark_list.rs
+src/bookmark_list.ui
 src/window.ui

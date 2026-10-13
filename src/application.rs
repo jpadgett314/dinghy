@@ -18,21 +18,46 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-use gettextrs::gettext;
 use adw::prelude::*;
 use adw::subclass::prelude::*;
+use gettextrs::gettext;
 use gtk::{gio, glib};
+use linkding::LinkDingClient;
 
-use crate::bookmark_data::BookmarkData;
+use crate::models::BookmarkModel;
 use crate::config::VERSION;
-use crate::preferences::PreferencesDialog;
+use crate::widgets::PreferencesDialog;
 use crate::DinghyWindow;
 
 mod imp {
     use super::*;
 
-    #[derive(Debug, Default)]
-    pub struct DinghyApplication {}
+    #[derive(Debug)]
+    pub struct DinghyApplication {
+        pub settings: gio::Settings,
+        pub bookmark_model: BookmarkModel,
+    }
+
+    impl Default for DinghyApplication {
+        fn default() -> Self {
+            let settings = gio::Settings::new("io.github.jpadgett314.Dinghy");
+            let url: String = settings.get("server-url");
+            let tok: String = settings.get("api-token");
+            let linkding_api = LinkDingClient::new(&url, &tok);
+            let bookmark_model = BookmarkModel::new(linkding_api);
+
+            /*
+            settings.connect_changed(Some("server-url"), move |settings, key| {
+                replace_api()
+            });
+            settings.connect_changed(Some("api-key"), move |settings, key| {
+                replace_api()
+            });
+            */
+
+            Self { settings, bookmark_model }
+        }
+    }
 
     #[glib::object_subclass]
     impl ObjectSubclass for DinghyApplication {
@@ -122,9 +147,8 @@ impl DinghyApplication {
     fn show_preferences(&self) {
         let window = self.active_window().unwrap();
         let dialog = PreferencesDialog::new();
-        let settings = gio::Settings::new("io.github.jpadgett314.Dinghy");
 
-        dialog.bind_settings(&settings);
+        dialog.bind_settings(&self.imp().settings);
         dialog.present(Some(&window));
     }
 
@@ -134,15 +158,8 @@ impl DinghyApplication {
             .and_downcast::<crate::window::DinghyWindow>()
             .expect("Active window should be a DinghyWindow");
 
-        let bookmarks = vec![
-            BookmarkData {
-                icon_path: None, // Or Some(String::from("/path/to/icon"))
-                name: String::from("Example Name"),
-                description: String::from("Example Description"),
-            },
-        ];
+        let bookmarks = self.imp().bookmark_model.search(String::from(""), 0);
 
-        window.imp().bookmark_list_widget.push(&bookmarks);
+        window.imp().bookmark_list_widget.replace(&bookmarks);
     }
 }
-

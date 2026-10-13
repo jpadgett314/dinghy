@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gresources>
   <gresource prefix="/io/github/jpadgett314/Dinghy">
-    <file preprocess="xml-stripblanks">bookmark-row.ui</file>
-    <file preprocess="xml-stripblanks">preferences.ui</file>
     <file preprocess="xml-stripblanks">shortcuts-dialog.ui</file>
+    <file preprocess="xml-stripblanks">widgets/bookmark_list.ui</file>
+    <file preprocess="xml-stripblanks">widgets/bookmark_row.ui</file>
+    <file preprocess="xml-stripblanks">widgets/preferences.ui</file>
     <file preprocess="xml-stripblanks">window.ui</file>
   </gresource>
 </gresources>

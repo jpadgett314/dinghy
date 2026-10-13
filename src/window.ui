@@ -5,11 +5,17 @@
   <template class="DinghyWindow" parent="AdwApplicationWindow">
     <property name="title" translatable="yes">Dinghy</property>
     <property name="default-width">800</property>
-    <property name="default-height">600</property>
+    <property name="default-height">680</property>
     <property name="content">
       <object class="AdwToolbarView">
         <child type="top">
           <object class="AdwHeaderBar">
+            <property name="title-widget">
+              <object class="AdwWindowTitle">
+                <property name="title" translatable="yes">Dinghy</property>
+                <property name="subtitle">subtitle</property>
+              </object>
+            </property>
             <child>
               <object class="GtkButton">
                 <property name="icon-name">view-refresh-symbolic</property>
@@ -28,17 +34,22 @@
           </object>
         </child>
         <property name="content">
-          <object class="GtkLabel" id="label">
-            <property name="label" translatable="yes">Hello, World!</property>
-            <style>
-              <class name="title-1"/>
-            </style>
-          </object>
           <object class="GtkScrolledWindow">
             <property name="vexpand">True</property>
             <property name="hexpand">True</property>
+            <property name="hscrollbar-policy">never</property>
             <property name="child">
-              <object class="BookmarkList" id="bookmark_list_widget"/>
+              <object class="AdwClamp">
+                <property name="maximum-size">760</property>
+                <property name="tightening-threshold">560</property>
+                <property name="margin-start">18</property>
+                <property name="margin-end">18</property>
+                <property name="margin-top">24</property>
+                <property name="margin-bottom">32</property>
+                <property name="child">
+                  <object class="BookmarkList" id="bookmark_list_widget"/>
+                </property>
+              </object>
             </property>
           </object>
         </property>
