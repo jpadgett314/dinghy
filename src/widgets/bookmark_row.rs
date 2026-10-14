@@ -9,7 +9,7 @@ mod imp {
     use super::*;
 
     #[derive(Debug, Default, gtk::CompositeTemplate)]
-    #[template(file = "bookmark_row.ui")]
+    #[template(resource = "/io/github/jpadgett314/Dinghy/widgets/bookmark_row.ui")]
     pub struct BookmarkRow {
         pub bookmark: OnceCell<BookmarkRecord>,
         #[template_child]
@@ -123,4 +123,5 @@ fn fetch_icon(url: &str) -> Result<Vec<u8>, ureq::Error> {
         .limit(256 * 256)
         .read_to_vec()
 }
+
 

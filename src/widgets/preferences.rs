@@ -1,12 +1,12 @@
 use adw::subclass::prelude::*;
 use adw::prelude::*;
-use gtk::{gio, glib, CompositeTemplate};
+use gtk::{gio, glib};
 
 mod imp {
     use super::*;
 
-    #[derive(Debug, Default, CompositeTemplate)]
-    #[template(resource = "/io/github/jpadgett314/Dinghy/preferences.ui")]
+    #[derive(Debug, Default, gtk::CompositeTemplate)]
+    #[template(resource = "/io/github/jpadgett314/Dinghy/widgets/preferences.ui")]
     pub struct PreferencesDialog {
         #[template_child]
         pub server_url_row: TemplateChild<adw::EntryRow>,
