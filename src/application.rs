@@ -95,6 +95,8 @@ mod imp {
             });
 
             window.present();
+
+            application.refresh_bookmarks();
         }
     }
 
@@ -131,8 +133,6 @@ impl DinghyApplication {
             .activate(move |app: &Self, _, _| app.refresh_bookmarks())
             .build();
         self.add_action_entries([quit_action, about_action, preferences_action, refresh_bookmarks_action]);
-
-
     }
 
     fn show_about(&self) {
@@ -158,8 +158,6 @@ impl DinghyApplication {
         dialog.bind_settings(&self.imp().settings);
         dialog.present(Some(&window));
     }
-
-
 
     fn refresh_bookmarks(&self) {
         let window = self
