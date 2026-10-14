@@ -6,11 +6,15 @@ rust-version = "1.92"
 
 [dependencies]
 gettext-rs = { version = "0.8", features = ["gettext-system"] }
-gtk = { version = "0.11", package = "gtk4", features = ["gnome_47"] }
 linkding-rs = "0.4.0"
 ureq = "3.4"
+
+[dependencies.gtk]
+package = "gtk4"
+version = "0.11"
+features = ["gnome_50"]
 
 [dependencies.adw]
 package = "libadwaita"
 version = "0.9"
-features = ["v1_6"]
+features = ["v1_9"]
