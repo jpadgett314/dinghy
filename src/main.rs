@@ -19,6 +19,7 @@
  */
 
 mod application;
+mod bookmark_record;
 mod config;
 mod models;
 mod widgets;

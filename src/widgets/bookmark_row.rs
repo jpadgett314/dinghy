@@ -1,15 +1,17 @@
 use adw::prelude::*;
 use adw::subclass::prelude::*;
 use gtk::{gio, glib};
-use linkding::Bookmark;
+use std::cell::OnceCell;
+
+use crate::bookmark_record::BookmarkRecord;
 
 mod imp {
     use super::*;
 
-    #[derive(Debug, gtk::CompositeTemplate)]
+    #[derive(Debug, Default, gtk::CompositeTemplate)]
     #[template(file = "bookmark_row.ui")]
     pub struct BookmarkRow {
-        pub bookmark_data: Bookmark,
+        pub bookmark: OnceCell<BookmarkRecord>,
         #[template_child]
         pub url_label: gtk::TemplateChild<gtk::Label>,
         #[template_child]
@@ -18,18 +20,6 @@ mod imp {
         pub description_label: gtk::TemplateChild<gtk::Label>,
         #[template_child]
         pub icon_image: gtk::TemplateChild<gtk::Image>,
-    }
-
-    impl Default for BookmarkRow {
-        fn default() -> Self {
-            Self {
-                bookmark_data: empty_bookmark(),
-                url_label: gtk::TemplateChild::default(),
-                title_label: gtk::TemplateChild::default(),
-                description_label: gtk::TemplateChild::default(),
-                icon_image: gtk::TemplateChild::default()
-            }
-        }
     }
 
     #[glib::object_subclass]
@@ -59,16 +49,17 @@ glib::wrapper! {
 }
 
 impl BookmarkRow {
-    pub fn new(fields: &Bookmark) -> Self {
+    pub fn new(bookmark: &BookmarkRecord) -> Self {
         let row: Self = glib::Object::new();
 
-        row.set_tooltip_text(Some(&fields.url));
+        let _ = row.imp().bookmark.set(bookmark.clone());
+        row.imp().url_label.set_label(&bookmark.url);
+        row.imp().title_label.set_label(&bookmark.title);
+        row.imp().description_label.set_label(&bookmark.description);
 
-        row.imp().url_label.set_label(&fields.url);
-        row.imp().title_label.set_label(&fields.title);
-        row.imp().description_label.set_label(&fields.description);
+        row.set_tooltip_text(Some(&bookmark.url));
 
-        let url = fields
+        let url = bookmark
             .favicon_url
             .as_ref()
             .filter(|url| !url.trim().is_empty());
@@ -81,9 +72,11 @@ impl BookmarkRow {
     }
 
     pub fn open(&self) {
-        let url = &self.imp().bookmark_data.url;
+        let Some(bookmark) = &self.imp().bookmark.get() else {
+            return;
+        };
         let parent = self.root().and_downcast::<gtk::Window>();
-        let opener = gtk::UriLauncher::new(url);
+        let opener = gtk::UriLauncher::new(&bookmark.url);
         opener.launch(
             parent.as_ref(),
             None::<&gio::Cancellable>,
@@ -101,37 +94,16 @@ impl BookmarkRow {
             let Ok(Ok(bytes)) = gio::spawn_blocking(move || fetch_icon(&url)).await else {
                 return;
             };
+            let Ok(texture) = gtk::gdk::Texture::from_bytes(&glib::Bytes::from_owned(bytes)) else {
+                return;
+            };
             let Some(row) = weak_row.upgrade() else {
                  return;
             };
-            let Ok(texture) = gtk::gdk::Texture::from_bytes(&glib::Bytes::from_owned(bytes))
-            else {
-                return;
-            };
+
             row.imp().icon_image.set_paintable(Some(&texture));
             row.imp().icon_image.remove_css_class("dim-label");
         });
-    }
-}
-
-fn empty_bookmark() -> Bookmark {
-    Bookmark {
-        id: -1,
-        url: String::from(""),
-        title: String::from("Placeholder bookmark"),
-        description: String::from(""),
-        notes: String::from(""),
-        web_archive_snapshot_url: String::from(""),
-        favicon_url: None,
-        preview_image_url: None,
-        is_archived: false,
-        unread: false,
-        shared: false,
-        tag_names: vec![],
-        date_added: String::from("2026-10-14T04:15:44.933Z"),
-        date_modified: String::from("2026-10-14T04:15:44.933Z"),
-        website_title: None,
-        website_description: None,
     }
 }
 

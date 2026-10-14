@@ -3,8 +3,8 @@ use adw::subclass::prelude::*;
 use gettextrs::ngettext;
 use gio::ListStore;
 use gtk::{gio, glib};
-use linkding::Bookmark;
 
+use crate::bookmark_record::BookmarkRecord;
 use crate::widgets::BookmarkRow;
 
 mod imp {
@@ -108,12 +108,12 @@ glib::wrapper! {
 }
 
 impl BookmarkList {
-    pub fn replace(&self, bookmarks: &Vec<Bookmark>) {
+    pub fn replace(&self, bookmarks: &Vec<BookmarkRecord>) {
         let rows: Vec<BookmarkRow> = bookmarks.iter().map(BookmarkRow::new).collect();
         self.model().splice(0, self.model().n_items(), &rows);
     }
 
-    pub fn push(&self, bookmarks: &Vec<Bookmark>) {
+    pub fn push(&self, bookmarks: &Vec<BookmarkRecord>) {
         let rows: Vec<BookmarkRow> = bookmarks.iter().map(BookmarkRow::new).collect();
         self.model().splice(self.model().n_items(), 0, &rows);
     }

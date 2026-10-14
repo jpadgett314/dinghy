@@ -1,4 +1,6 @@
-use linkding::{Bookmark, LinkDingClient, ListBookmarksArgs};
+use linkding::{LinkDingClient, ListBookmarksArgs};
+
+use crate::bookmark_record::{BookmarkRecord, to_internal};
 
 #[derive(Debug)]
 pub struct BookmarkModel {
@@ -11,7 +13,7 @@ impl BookmarkModel {
         Self { api }
     }
 
-    pub fn search(&self, q: String, p: i32) -> Vec<Bookmark> {
+    pub fn search(&self, q: String, p: i32) -> Vec<BookmarkRecord> {
         let req = ListBookmarksArgs {
             query: Some(q),
             limit: Some(100),
@@ -24,6 +26,9 @@ impl BookmarkModel {
         match res {
             Ok(data) => {
                 data.results
+                    .iter()
+                    .map(|v| to_internal(v))
+                    .collect()
             }
             Err(e) => {
                 eprintln!("API error: {e}");
