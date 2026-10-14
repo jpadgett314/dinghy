@@ -1,13 +1,12 @@
 use linkding::{LinkDingClient, ListBookmarksArgs};
 
-use crate::bookmark_record::{BookmarkRecord, to_internal};
+use crate::bookmark_record::{BookmarkRecord, to_create_req, to_internal, to_update_req};
 
 #[derive(Debug)]
 pub struct BookmarkModel {
     pub api: LinkDingClient
 }
 
-// purpose: simply API (pagination mainly)
 impl BookmarkModel {
     pub fn new(api: LinkDingClient) -> Self {
         Self { api }
@@ -37,7 +36,45 @@ impl BookmarkModel {
         }
     }
 
-    // TODO: create, update, delete
+    pub fn create(&self, b: &BookmarkRecord) -> BookmarkRecord {
+        let req = to_create_req(b);
+
+        let res = self.api.create_bookmark(req);
+
+        match res {
+            Ok(data) => to_internal(&data),
+            Err(e) => {
+                eprintln!("API error: {e}");
+                BookmarkRecord::default()
+            }
+        }
+    }
+
+    pub fn update(&self, b: &BookmarkRecord) -> BookmarkRecord {
+        let req = to_update_req(b);
+
+        let res = self.api.update_bookmark(b.id, req);
+
+        match res {
+            Ok(data) => to_internal(&data),
+            Err(e) => {
+                eprintln!("API error: {e}");
+                BookmarkRecord::default()
+            }
+        }
+    }
+
+    pub fn delete(&self, id: i32) -> bool {
+        let res = self.api.delete_bookmark(id);
+
+        match res {
+            Ok(data) => data,
+            Err(e) => {
+                eprintln!("API error: {e}");
+                false
+            }
+        }
+    }
 }
 
 impl Default for BookmarkModel {

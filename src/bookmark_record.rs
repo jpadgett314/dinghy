@@ -1,4 +1,4 @@
-use linkding::Bookmark;
+use linkding::{Bookmark, CreateBookmarkBody, UpdateBookmarkBody};
 
 // linkding::Bookmark fails to implement these traits...
 #[derive(Clone, Default, Debug, PartialEq)]
@@ -21,10 +21,9 @@ pub struct BookmarkRecord {
     pub website_description: Option<String>,
 }
 
-/*
 impl From<Bookmark> for BookmarkRecord {
-    fn from(b: Bookmark) -> internal {
-        internal {
+    fn from(b: Bookmark) -> BookmarkRecord {
+        BookmarkRecord {
             id: b.id,
             url: b.url,
             title: b.title,
@@ -44,9 +43,7 @@ impl From<Bookmark> for BookmarkRecord {
         }
     }
 }
-*/
 
-#[allow(unused)]
 pub fn to_internal(external: &Bookmark) -> BookmarkRecord {
     BookmarkRecord {
         id: external.id.clone(),
@@ -85,6 +82,45 @@ pub fn to_external(internal: &BookmarkRecord) -> Bookmark {
         tag_names: internal.tag_names.clone(),
         date_added: internal.date_added.clone(),
         date_modified: internal.date_modified.clone(),
+        website_title: internal.website_title.clone(),
+        website_description: internal.website_description.clone(),
+    }
+}
+
+pub fn to_create_req(internal: &BookmarkRecord) -> CreateBookmarkBody {
+    CreateBookmarkBody {
+        url: internal.url.clone(),
+        title: Some(internal.title.clone()),
+        description: Some(internal.description.clone()),
+        notes: Some(internal.notes.clone()),
+        web_archive_snapshot_url: Some(internal.web_archive_snapshot_url.clone()),
+        favicon_url: internal.favicon_url.clone(),
+        preview_image_url: internal.preview_image_url.clone(),
+        is_archived: Some(internal.is_archived.clone()),
+        unread: Some(internal.unread.clone()),
+        shared: Some(internal.shared.clone()),
+        tag_names: Some(internal.tag_names.clone()),
+        date_added: Some(internal.date_added.clone()),
+        date_modified: Some(internal.date_modified.clone()),
+        website_title: internal.website_title.clone(),
+        website_description: internal.website_description.clone(),
+    }
+}
+
+pub fn to_update_req(internal: &BookmarkRecord) -> UpdateBookmarkBody {
+    UpdateBookmarkBody {
+        title: Some(internal.title.clone()),
+        description: Some(internal.description.clone()),
+        notes: Some(internal.notes.clone()),
+        web_archive_snapshot_url: Some(internal.web_archive_snapshot_url.clone()),
+        favicon_url: internal.favicon_url.clone(),
+        preview_image_url: internal.preview_image_url.clone(),
+        is_archived: Some(internal.is_archived.clone()),
+        unread: Some(internal.unread.clone()),
+        shared: Some(internal.shared.clone()),
+        tag_names: Some(internal.tag_names.clone()),
+        date_added: Some(internal.date_added.clone()),
+        date_modified: Some(internal.date_modified.clone()),
         website_title: internal.website_title.clone(),
         website_description: internal.website_description.clone(),
     }
