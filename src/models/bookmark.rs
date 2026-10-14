@@ -32,7 +32,7 @@ impl BookmarkModel {
         }
     }
 
-    // TODO: update, delete
+    // TODO: create, update, delete
 }
 
 impl Default for BookmarkModel {

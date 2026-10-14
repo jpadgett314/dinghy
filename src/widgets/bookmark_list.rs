@@ -17,7 +17,11 @@ mod imp {
         #[template_child]
         pub count: gtk::TemplateChild<gtk::Label>,
         #[template_child]
-        pub list: gtk::TemplateChild<gtk::ListBox>,
+        pub list: gtk::TemplateChild<gtk::ListView>,
+        #[template_child]
+        pub selection: gtk::TemplateChild<gtk::NoSelection>,
+        #[template_child]
+        pub factory: gtk::TemplateChild<gtk::SignalListItemFactory>,
     }
 
     #[glib::object_subclass]
@@ -40,11 +44,41 @@ mod imp {
             self.parent_constructed();
 
             let model = ListStore::new::<BookmarkRow>();
-            self.list.bind_model(Some(&model), |item| {
-                item.downcast_ref::<BookmarkRow>()
-                    .expect("model item should be a BookmarkRow")
-                    .clone()
-                    .upcast()
+
+            self.factory.connect_setup(|_, item| {
+                let item = item
+                    .downcast_ref::<gtk::ListItem>()
+                    .expect("factory item should be a ListItem");
+                item.set_selectable(false);
+                item.set_activatable(true);
+            });
+
+            self.factory.connect_bind(|_, item| {
+                let item = item
+                    .downcast_ref::<gtk::ListItem>()
+                    .expect("factory item should be a ListItem");
+                let row = item
+                    .item()
+                    .and_downcast::<BookmarkRow>()
+                    .expect("model item should be a BookmarkRow");
+                item.set_child(Some(&row));
+            });
+
+            self.factory.connect_unbind(|_, item| {
+                item.downcast_ref::<gtk::ListItem>()
+                    .expect("factory item should be a ListItem")
+                    .set_child(None::<&gtk::Widget>);
+            });
+
+            self.selection.set_model(Some(&model));
+
+            let weak_list = self.obj().downgrade();
+            self.list.connect_activate(move |_, position| {
+                if let Some(list) = weak_list.upgrade() {
+                    if let Some(row) = list.model().item(position).and_downcast::<BookmarkRow>() {
+                        row.open();
+                    }
+                }
             });
 
             let count = self.count.get();

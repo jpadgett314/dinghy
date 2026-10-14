@@ -76,19 +76,24 @@ mod imp {
     }
 
     impl ApplicationImpl for DinghyApplication {
-        // We connect to the activate callback to create a window when the application
-        // has been launched. Additionally, this callback notifies us when the user
-        // tries to launch a "second instance" of the application. When they try
-        // to do that, we'll just present any existing window.
+        fn startup(&self) {
+            self.parent_startup();
+            let provider = gtk::CssProvider::new();
+            provider.load_from_resource("/io/github/jpadgett314/Dinghy/style.css");
+            gtk::style_context_add_provider_for_display(
+                &gtk::gdk::Display::default().expect("GTK display should be available"),
+                &provider,
+                gtk::STYLE_PROVIDER_PRIORITY_APPLICATION,
+            );
+        }
+
         fn activate(&self) {
             let application = self.obj();
-            // Get the current window or create one if necessary
             let window = application.active_window().unwrap_or_else(|| {
                 let window = DinghyWindow::new(&*application);
                 window.upcast()
             });
 
-            // Ask the window manager/compositor to present the window
             window.present();
         }
     }
@@ -126,6 +131,8 @@ impl DinghyApplication {
             .activate(move |app: &Self, _, _| app.refresh_bookmarks())
             .build();
         self.add_action_entries([quit_action, about_action, preferences_action, refresh_bookmarks_action]);
+
+
     }
 
     fn show_about(&self) {
@@ -151,6 +158,8 @@ impl DinghyApplication {
         dialog.bind_settings(&self.imp().settings);
         dialog.present(Some(&window));
     }
+
+
 
     fn refresh_bookmarks(&self) {
         let window = self
