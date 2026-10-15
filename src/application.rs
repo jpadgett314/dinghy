@@ -20,7 +20,7 @@
 
 use adw::prelude::*;
 use adw::subclass::prelude::*;
-use gettextrs::gettext;
+use gettextrs::{gettext};
 use gtk::{gio, glib};
 use linkding::LinkDingClient;
 
@@ -166,7 +166,20 @@ impl DinghyApplication {
             .expect("Active window should be a DinghyWindow");
 
         let bookmarks = self.imp().bookmark_model.search(String::from(""), 0);
+        let bookmarks_widget = window.imp().bookmark_list_widget.get();
+        let title_widget = window.imp().window_title_widget.get();
+        let title: String = self.imp().settings.get("server-url");
 
-        window.imp().bookmark_list_widget.replace(&bookmarks);
+        bookmarks_widget.replace(&bookmarks);
+
+        // TODO: do not use received list length for this count! This is limited for pagination.
+        title_widget.set_title(&title);
+        title_widget.set_subtitle(
+            &match bookmarks.len() {
+                0 => gettext("no bookmarks"),
+                1 => gettext("1 bookmark"),
+                _ => gettext("{} bookmarks").replace("{}", &bookmarks.len().to_string()),
+            }
+        );
     }
 }

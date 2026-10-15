@@ -87,6 +87,7 @@ pub fn to_external(internal: &BookmarkRecord) -> Bookmark {
     }
 }
 
+// TODO: check empty strings
 pub fn to_create_req(internal: &BookmarkRecord) -> CreateBookmarkBody {
     CreateBookmarkBody {
         url: internal.url.clone(),

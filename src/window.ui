@@ -11,9 +11,9 @@
         <child type="top">
           <object class="AdwHeaderBar">
             <property name="title-widget">
-              <object class="AdwWindowTitle">
-                <property name="title" translatable="yes">Dinghy</property>
-                <property name="subtitle">subtitle</property>
+              <object class="AdwWindowTitle" id="window_title_widget">
+                <property name="title">Dinghy</property>
+                <property name="subtitle"></property>
               </object>
             </property>
             <child>

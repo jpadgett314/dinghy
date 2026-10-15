@@ -19,6 +19,7 @@
  */
 
 use adw::subclass::prelude::*;
+use adw::WindowTitle;
 use gtk::prelude::*;
 use gtk::{gio, glib};
 
@@ -32,6 +33,8 @@ mod imp {
     pub struct DinghyWindow {
         #[template_child]
         pub bookmark_list_widget: TemplateChild<BookmarkList>,
+        #[template_child]
+        pub window_title_widget: TemplateChild<WindowTitle>,
     }
 
     #[glib::object_subclass]

@@ -1,6 +1,5 @@
 use adw::prelude::*;
 use adw::subclass::prelude::*;
-use gettextrs::ngettext;
 use gio::ListStore;
 use gtk::{gio, glib};
 
@@ -14,8 +13,6 @@ mod imp {
     #[template(resource = "/io/github/jpadgett314/Dinghy/widgets/bookmark_list.ui")]
     pub struct BookmarkList {
         pub model: std::cell::OnceCell<ListStore>,
-        #[template_child]
-        pub count: gtk::TemplateChild<gtk::Label>,
         #[template_child]
         pub list: gtk::TemplateChild<gtk::ListView>,
         #[template_child]
@@ -81,16 +78,6 @@ mod imp {
                 }
             });
 
-            let count = self.count.get();
-            model.connect_items_changed(move |model, _, _, _| {
-                let total = model.n_items();
-                count.set_label(
-                    &ngettext("{} bookmark", "{} bookmarks", total)
-                        .replace("{}", &total.to_string()),
-                );
-                count.set_visible(total > 0);
-            });
-
             self.model
                 .set(model)
                 .expect("model should only be set once");
@@ -125,3 +112,4 @@ impl BookmarkList {
             .expect("BookmarkList model should be initialized")
     }
 }
+
