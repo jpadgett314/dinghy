@@ -21,7 +21,7 @@
 use adw::subclass::prelude::*;
 use adw::WindowTitle;
 use gtk::prelude::*;
-use gtk::{gio, glib};
+use gtk::{gio, glib, SearchBar, SearchEntry, ToggleButton};
 
 use crate::widgets::BookmarkList;
 
@@ -33,6 +33,12 @@ mod imp {
     pub struct DinghyWindow {
         #[template_child]
         pub bookmark_list_widget: TemplateChild<BookmarkList>,
+        #[template_child]
+        pub search_bar: TemplateChild<SearchBar>,
+        #[template_child]
+        pub search_entry: TemplateChild<SearchEntry>,
+        #[template_child]
+        pub search_toggle_button: TemplateChild<ToggleButton>,
         #[template_child]
         pub window_title_widget: TemplateChild<WindowTitle>,
     }

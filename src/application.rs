@@ -96,7 +96,7 @@ mod imp {
 
             window.present();
 
-            application.refresh_bookmarks();
+            application.setup_search();
         }
     }
 
@@ -132,7 +132,10 @@ impl DinghyApplication {
         let refresh_bookmarks_action = gio::ActionEntry::builder("refresh-bookmarks")
             .activate(move |app: &Self, _, _| app.refresh_bookmarks())
             .build();
-        self.add_action_entries([quit_action, about_action, preferences_action, refresh_bookmarks_action]);
+        let toggle_search_action = gio::ActionEntry::builder("toggle-search")
+            .activate(move |app: &Self, _, _| app.toggle_search())
+            .build();
+        self.add_action_entries([quit_action, about_action, preferences_action, refresh_bookmarks_action, toggle_search_action]);
     }
 
     fn show_about(&self) {
@@ -159,15 +162,44 @@ impl DinghyApplication {
         dialog.present(Some(&window));
     }
 
+    fn setup_search(&self) {
+        let window = self
+            .active_window()
+            .and_downcast::<DinghyWindow>()
+            .expect("Active window should be a DinghyWindow");
+
+        let search_entry = window.imp().search_entry.get();
+
+        let application = self.clone();
+
+        search_entry.connect_search_changed(move |entry| {
+            let query: String = entry.text().into();
+            application.search_bookmarks(query);
+            return;
+        });
+    }
+
     fn refresh_bookmarks(&self) {
+        let window = self
+            .active_window()
+            .and_downcast::<DinghyWindow>()
+            .expect("Active window should be a DinghyWindow");
+
+        let entry = window.imp().search_entry.get();
+        let query = entry.text().to_string();
+
+        self.search_bookmarks(query);
+    }
+
+    fn search_bookmarks(&self, query: String) {
         let window = self
             .active_window()
             .and_downcast::<crate::window::DinghyWindow>()
             .expect("Active window should be a DinghyWindow");
 
-        let bookmarks = self.imp().bookmark_model.search(String::from(""), 0);
         let bookmarks_widget = window.imp().bookmark_list_widget.get();
         let title_widget = window.imp().window_title_widget.get();
+        let bookmarks = self.imp().bookmark_model.search(query, 0);
         let title: String = self.imp().settings.get("server-url");
 
         bookmarks_widget.replace(&bookmarks);
@@ -181,5 +213,21 @@ impl DinghyApplication {
                 _ => gettext("{} bookmarks").replace("{}", &bookmarks.len().to_string()),
             }
         );
+    }
+
+    fn toggle_search(&self) {
+        let window = self
+            .active_window()
+            .and_downcast::<DinghyWindow>()
+            .expect("Active window should be a DinghyWindow");
+
+        let search_button = window.imp().search_toggle_button.get();
+        let search_bar = window.imp().search_bar.get();
+        let active = search_button.is_active();
+
+        // GtkToggle button doesn't modify its own state, so it's done here
+        search_button.set_active(!active);
+
+        search_bar.set_search_mode(!active);
     }
 }

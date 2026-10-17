@@ -1,3 +1,3 @@
-# dinghy
+# Dinghy
 
-A description of this project.
+

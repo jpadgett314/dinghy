@@ -7,7 +7,7 @@
     <property name="default-width">800</property>
     <property name="default-height">680</property>
     <property name="content">
-      <object class="AdwToolbarView">
+      <object class="AdwToolbarView" id="toolbar_view">
         <child type="top">
           <object class="AdwHeaderBar">
             <property name="title-widget">
@@ -17,10 +17,10 @@
               </object>
             </property>
             <child>
-              <object class="GtkButton">
-                <property name="icon-name">view-refresh-symbolic</property>
-                <property name="action-name">app.refresh-bookmarks</property>
-                <property name="tooltip-text" translatable="yes">Refresh Bookmarks</property>
+              <object class="GtkToggleButton" id="search_toggle_button">
+                <property name="icon-name">system-search-symbolic</property>
+                <property name="action-name">app.toggle-search</property>
+                <property name="tooltip-text" translatable="yes">Search</property>
               </object>
             </child>
             <child type="end">
@@ -29,6 +29,24 @@
                 <property name="icon-name">open-menu-symbolic</property>
                 <property name="tooltip-text" translatable="yes">Main Menu</property>
                 <property name="menu-model">primary_menu</property>
+              </object>
+            </child>
+            <child type="end">
+              <object class="GtkButton">
+                <property name="icon-name">view-refresh-symbolic</property>
+                <property name="action-name">app.refresh-bookmarks</property>
+                <property name="tooltip-text" translatable="yes">Refresh Bookmarks</property>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child type="top">
+          <object class="GtkSearchBar" id="search_bar">
+            <property name="key-capture-widget">toolbar_view</property>
+            <property name="show_close_button">False</property>
+            <child>
+              <object class="GtkSearchEntry" id="search_entry">
+                <property name="search-delay">100</property>
               </object>
             </child>
           </object>
