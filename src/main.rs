@@ -21,6 +21,8 @@
 mod application;
 mod bookmark_record;
 mod config;
+mod connection;
+mod icon_cache;
 mod models;
 mod widgets;
 mod window;

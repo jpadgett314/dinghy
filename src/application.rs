@@ -26,6 +26,7 @@ use linkding::LinkDingClient;
 
 use crate::models::BookmarkModel;
 use crate::config::VERSION;
+use crate::connection::{Connection, ConnectionStatus};
 use crate::widgets::PreferencesDialog;
 use crate::DinghyWindow;
 
@@ -34,8 +35,9 @@ mod imp {
 
     #[derive(Debug)]
     pub struct DinghyApplication {
-        pub settings: gio::Settings,
         pub bookmark_model: BookmarkModel,
+        pub connection: Connection,
+        pub settings: gio::Settings,
     }
 
     impl Default for DinghyApplication {
@@ -43,8 +45,12 @@ mod imp {
             let settings = gio::Settings::new("io.github.jpadgett314.Dinghy");
             let url: String = settings.get("server-url");
             let tok: String = settings.get("api-token");
-            let linkding_api = LinkDingClient::new(&url, &tok);
-            let bookmark_model = BookmarkModel::new(linkding_api);
+
+            // LinkDingClient is not cloneable
+            let api1 = LinkDingClient::new(&url, &tok);
+            let connection = Connection::new(api1);
+            let api2 = LinkDingClient::new(&url, &tok);
+            let bookmark_model = BookmarkModel::new(api2);
 
             /*
             settings.connect_changed(Some("server-url"), move |settings, key| {
@@ -55,7 +61,7 @@ mod imp {
             });
             */
 
-            Self { settings, bookmark_model }
+            Self { bookmark_model, connection, settings }
         }
     }
 
@@ -119,6 +125,13 @@ impl DinghyApplication {
             .build()
     }
 
+    fn dinghy_window(&self) -> DinghyWindow {
+        self
+            .active_window()
+            .and_downcast::<DinghyWindow>()
+            .expect("Active window should be a DinghyWindow")
+    }
+
     fn setup_gactions(&self) {
         let quit_action = gio::ActionEntry::builder("quit")
             .activate(move |app: &Self, _, _| app.quit())
@@ -139,7 +152,8 @@ impl DinghyApplication {
     }
 
     fn show_about(&self) {
-        let window = self.active_window().unwrap();
+        let window = self.dinghy_window();
+
         let about = adw::AboutDialog::builder()
             .application_name("Dinghy")
             .application_icon("io.github.jpadgett314.Dinghy")
@@ -155,7 +169,8 @@ impl DinghyApplication {
     }
 
     fn show_preferences(&self) {
-        let window = self.active_window().unwrap();
+        let window = self.dinghy_window();
+
         let dialog = PreferencesDialog::new();
 
         dialog.bind_settings(&self.imp().settings);
@@ -163,13 +178,9 @@ impl DinghyApplication {
     }
 
     fn setup_search(&self) {
-        let window = self
-            .active_window()
-            .and_downcast::<DinghyWindow>()
-            .expect("Active window should be a DinghyWindow");
+        let window = self.dinghy_window();
 
         let search_entry = window.imp().search_entry.get();
-
         let application = self.clone();
 
         search_entry.connect_search_changed(move |entry| {
@@ -180,10 +191,7 @@ impl DinghyApplication {
     }
 
     fn refresh_bookmarks(&self) {
-        let window = self
-            .active_window()
-            .and_downcast::<DinghyWindow>()
-            .expect("Active window should be a DinghyWindow");
+        let window = self.dinghy_window();
 
         let entry = window.imp().search_entry.get();
         let query = entry.text().to_string();
@@ -192,34 +200,18 @@ impl DinghyApplication {
     }
 
     fn search_bookmarks(&self, query: String) {
-        let window = self
-            .active_window()
-            .and_downcast::<crate::window::DinghyWindow>()
-            .expect("Active window should be a DinghyWindow");
+        let window = self.dinghy_window();
 
         let bookmarks_widget = window.imp().bookmark_list_widget.get();
-        let title_widget = window.imp().window_title_widget.get();
         let bookmarks = self.imp().bookmark_model.search(query, 0);
-        let title: String = self.imp().settings.get("server-url");
 
         bookmarks_widget.replace(&bookmarks);
 
-        // TODO: do not use received list length for this count! This is limited for pagination.
-        title_widget.set_title(&title);
-        title_widget.set_subtitle(
-            &match bookmarks.len() {
-                0 => gettext("no bookmarks"),
-                1 => gettext("1 bookmark"),
-                _ => gettext("{} bookmarks").replace("{}", &bookmarks.len().to_string()),
-            }
-        );
+        self.update_title();
     }
 
     fn toggle_search(&self) {
-        let window = self
-            .active_window()
-            .and_downcast::<DinghyWindow>()
-            .expect("Active window should be a DinghyWindow");
+        let window = self.dinghy_window();
 
         let search_button = window.imp().search_toggle_button.get();
         let search_bar = window.imp().search_bar.get();
@@ -229,5 +221,32 @@ impl DinghyApplication {
         search_button.set_active(!active);
 
         search_bar.set_search_mode(!active);
+    }
+
+    fn update_title(&self) {
+        let window = self.dinghy_window();
+
+        let title_widget = window.imp().window_title_widget.get();
+        let title: String = self.imp().settings.get("server-url");
+
+        title_widget.set_title(&title);
+
+        title_widget.set_subtitle(
+            &match self.imp().connection.status() {
+                ConnectionStatus::Disconnected => gettext("disconnected"),
+                ConnectionStatus::Connected => {
+                    match self.imp().connection.stats() {
+                        None => gettext("disconnected"),
+                        Some(data) => {
+                            match data.bookmark_count {
+                                0 => gettext("no bookmarks"),
+                                1 => gettext("1 bookmark"),
+                                n => gettext("{} bookmarks").replace("{}", &n.to_string()),
+                            }
+                        }
+                    }
+                }
+            }
+        );
     }
 }
