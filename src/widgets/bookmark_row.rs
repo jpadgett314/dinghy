@@ -4,6 +4,7 @@ use gtk::{gio, glib};
 use std::cell::OnceCell;
 
 use crate::bookmark_record::BookmarkRecord;
+use crate::icon_cache::fetch_icon;
 
 mod imp {
     use super::*;
@@ -75,8 +76,10 @@ impl BookmarkRow {
         let Some(bookmark) = &self.imp().bookmark.get() else {
             return;
         };
+
         let parent = self.root().and_downcast::<gtk::Window>();
         let opener = gtk::UriLauncher::new(&bookmark.url);
+
         opener.launch(
             parent.as_ref(),
             None::<&gio::Cancellable>,
@@ -90,11 +93,9 @@ impl BookmarkRow {
 
     pub fn load_icon(&self, url: String) {
         let weak_row = self.downgrade();
+
         glib::spawn_future_local(async move {
-            let Ok(Ok(bytes)) = gio::spawn_blocking(move || fetch_icon(&url)).await else {
-                return;
-            };
-            let Ok(texture) = gtk::gdk::Texture::from_bytes(&glib::Bytes::from_owned(bytes)) else {
+            let Ok(Some(texture)) = gio::spawn_blocking(move || fetch_icon(&url)).await else {
                 return;
             };
             let Some(row) = weak_row.upgrade() else {
@@ -106,22 +107,4 @@ impl BookmarkRow {
         });
     }
 }
-
-fn fetch_icon(url: &str) -> Result<Vec<u8>, ureq::Error> {
-    static AGENT: std::sync::OnceLock<ureq::Agent> = std::sync::OnceLock::new();
-    let agent = AGENT.get_or_init(|| {
-        ureq::Agent::config_builder()
-            .timeout_global(Some(std::time::Duration::from_secs(10)))
-            .build()
-            .into()
-    });
-    agent
-        .get(url)
-        .call()?
-        .body_mut()
-        .with_config()
-        .limit(256 * 256)
-        .read_to_vec()
-}
-
 
