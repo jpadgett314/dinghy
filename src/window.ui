@@ -52,7 +52,7 @@
           </object>
         </child>
         <property name="content">
-          <object class="BookmarkList" id="bookmark_list_widget"/>
+          <object class="BookmarkFeed" id="bookmark_feed_widget"/>
         </property>
       </object>
     </property>

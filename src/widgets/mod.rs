@@ -1,7 +1,8 @@
-mod bookmark_list;
-mod bookmark_row;
+mod bookmark_card;
+mod bookmark_feed;
 mod preferences;
-pub use bookmark_list::BookmarkList;
-pub use bookmark_row::BookmarkRow;
+pub use bookmark_card::BookmarkCard;
+pub use bookmark_feed::BookmarkFeed;
 pub use preferences::PreferencesDialog;
+
 

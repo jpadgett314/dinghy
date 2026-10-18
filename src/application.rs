@@ -204,7 +204,7 @@ impl DinghyApplication {
         let window = self.dinghy_window();
 
         // TODO: do in glib::spawn_future_local + gio::spawn_blocking
-        let bookmarks_widget = window.imp().bookmark_list_widget.get();
+        let bookmarks_widget = window.imp().bookmark_feed_widget.get();
         let bookmarks = self.imp().bookmark_model.search(query, 0);
 
         bookmarks_widget.replace(&bookmarks);

@@ -10,8 +10,8 @@ mod imp {
     use super::*;
 
     #[derive(Debug, Default, gtk::CompositeTemplate)]
-    #[template(resource = "/io/github/jpadgett314/Dinghy/widgets/bookmark_row.ui")]
-    pub struct BookmarkRow {
+    #[template(resource = "/io/github/jpadgett314/Dinghy/widgets/bookmark_card.ui")]
+    pub struct BookmarkCard {
         pub bookmark: OnceCell<BookmarkRecord>,
         #[template_child]
         pub url_label: gtk::TemplateChild<gtk::Label>,
@@ -24,9 +24,9 @@ mod imp {
     }
 
     #[glib::object_subclass]
-    impl ObjectSubclass for BookmarkRow {
-        const NAME: &'static str = "BookmarkRow";
-        type Type = super::BookmarkRow;
+    impl ObjectSubclass for BookmarkCard {
+        const NAME: &'static str = "BookmarkCard";
+        type Type = super::BookmarkCard;
         type ParentType = gtk::Box;
 
         fn class_init(klass: &mut Self::Class) {
@@ -38,18 +38,18 @@ mod imp {
         }
     }
 
-    impl ObjectImpl for BookmarkRow {}
-    impl WidgetImpl for BookmarkRow {}
-    impl BoxImpl for BookmarkRow {}
+    impl ObjectImpl for BookmarkCard {}
+    impl WidgetImpl for BookmarkCard {}
+    impl BoxImpl for BookmarkCard {}
 }
 
 glib::wrapper! {
-    pub struct BookmarkRow(ObjectSubclass<imp::BookmarkRow>)
+    pub struct BookmarkCard(ObjectSubclass<imp::BookmarkCard>)
         @extends gtk::Widget, gtk::Box,
         @implements gtk::Accessible, gtk::Buildable, gtk::ConstraintTarget, gtk::Orientable;
 }
 
-impl BookmarkRow {
+impl BookmarkCard {
     pub fn new(bookmark: &BookmarkRecord) -> Self {
         let row: Self = glib::Object::new();
 

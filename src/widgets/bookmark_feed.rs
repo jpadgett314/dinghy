@@ -4,14 +4,14 @@ use gio::ListStore;
 use gtk::{gio, glib};
 
 use crate::bookmark_record::BookmarkRecord;
-use crate::widgets::BookmarkRow;
+use crate::widgets::BookmarkCard;
 
 mod imp {
     use super::*;
 
     #[derive(Default, gtk::CompositeTemplate)]
-    #[template(resource = "/io/github/jpadgett314/Dinghy/widgets/bookmark_list.ui")]
-    pub struct BookmarkList {
+    #[template(resource = "/io/github/jpadgett314/Dinghy/widgets/bookmark_feed.ui")]
+    pub struct BookmarkFeed {
         pub model: std::cell::OnceCell<ListStore>,
         #[template_child]
         pub list: gtk::TemplateChild<gtk::ListView>,
@@ -22,9 +22,9 @@ mod imp {
     }
 
     #[glib::object_subclass]
-    impl ObjectSubclass for BookmarkList {
-        const NAME: &'static str = "BookmarkList";
-        type Type = super::BookmarkList;
+    impl ObjectSubclass for BookmarkFeed {
+        const NAME: &'static str = "BookmarkFeed";
+        type Type = super::BookmarkFeed;
         type ParentType = gtk::Box;
 
         fn class_init(klass: &mut Self::Class) {
@@ -36,11 +36,11 @@ mod imp {
         }
     }
 
-    impl ObjectImpl for BookmarkList {
+    impl ObjectImpl for BookmarkFeed {
         fn constructed(&self) {
             self.parent_constructed();
 
-            let model = ListStore::new::<BookmarkRow>();
+            let model = ListStore::new::<BookmarkCard>();
 
             self.factory.connect_setup(|_, item| {
                 let item = item
@@ -56,8 +56,8 @@ mod imp {
                     .expect("factory item should be a ListItem");
                 let row = item
                     .item()
-                    .and_downcast::<BookmarkRow>()
-                    .expect("model item should be a BookmarkRow");
+                    .and_downcast::<BookmarkCard>()
+                    .expect("model item should be a BookmarkCard");
                 item.set_child(Some(&row));
             });
 
@@ -72,7 +72,7 @@ mod imp {
             let weak_list = self.obj().downgrade();
             self.list.connect_activate(move |_, position| {
                 if let Some(list) = weak_list.upgrade() {
-                    if let Some(row) = list.model().item(position).and_downcast::<BookmarkRow>() {
+                    if let Some(row) = list.model().item(position).and_downcast::<BookmarkCard>() {
                         row.open();
                     }
                 }
@@ -84,24 +84,24 @@ mod imp {
         }
     }
 
-    impl WidgetImpl for BookmarkList {}
-    impl BoxImpl for BookmarkList {}
+    impl WidgetImpl for BookmarkFeed {}
+    impl BoxImpl for BookmarkFeed {}
 }
 
 glib::wrapper! {
-    pub struct BookmarkList(ObjectSubclass<imp::BookmarkList>)
+    pub struct BookmarkFeed(ObjectSubclass<imp::BookmarkFeed>)
         @extends gtk::Widget, gtk::Box,
         @implements gtk::Accessible, gtk::Buildable, gtk::ConstraintTarget, gtk::Orientable;
 }
 
-impl BookmarkList {
+impl BookmarkFeed {
     pub fn replace(&self, bookmarks: &Vec<BookmarkRecord>) {
-        let rows: Vec<BookmarkRow> = bookmarks.iter().map(BookmarkRow::new).collect();
+        let rows: Vec<BookmarkCard> = bookmarks.iter().map(BookmarkCard::new).collect();
         self.model().splice(0, self.model().n_items(), &rows);
     }
 
     pub fn push(&self, bookmarks: &Vec<BookmarkRecord>) {
-        let rows: Vec<BookmarkRow> = bookmarks.iter().map(BookmarkRow::new).collect();
+        let rows: Vec<BookmarkCard> = bookmarks.iter().map(BookmarkCard::new).collect();
         self.model().splice(self.model().n_items(), 0, &rows);
     }
 
@@ -109,7 +109,7 @@ impl BookmarkList {
         self.imp()
             .model
             .get()
-            .expect("BookmarkList model should be initialized")
+            .expect("BookmarkFeed model should be initialized")
     }
 }
 

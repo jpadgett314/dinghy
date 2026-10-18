@@ -23,7 +23,7 @@ use adw::WindowTitle;
 use gtk::prelude::*;
 use gtk::{gio, glib, SearchBar, SearchEntry, ToggleButton};
 
-use crate::widgets::BookmarkList;
+use crate::widgets::BookmarkFeed;
 
 mod imp {
     use super::*;
@@ -32,7 +32,7 @@ mod imp {
     #[template(resource = "/io/github/jpadgett314/Dinghy/window.ui")]
     pub struct DinghyWindow {
         #[template_child]
-        pub bookmark_list_widget: TemplateChild<BookmarkList>,
+        pub bookmark_feed_widget: TemplateChild<BookmarkFeed>,
         #[template_child]
         pub search_bar: TemplateChild<SearchBar>,
         #[template_child]
@@ -50,7 +50,6 @@ mod imp {
         type ParentType = adw::ApplicationWindow;
 
         fn class_init(klass: &mut Self::Class) {
-            BookmarkList::ensure_type();
             klass.bind_template();
         }
 

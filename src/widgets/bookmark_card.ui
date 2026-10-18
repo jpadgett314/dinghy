@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
   <requires lib="gtk" version="4.0"/>
-  <template class="BookmarkRow" parent="GtkBox">
+  <template class="BookmarkCard" parent="GtkBox">
     <property name="orientation">horizontal</property>
     <property name="spacing">16</property>
     <style>

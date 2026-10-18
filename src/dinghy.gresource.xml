@@ -3,8 +3,8 @@
   <gresource prefix="/io/github/jpadgett314/Dinghy">
     <file>style.css</file>
     <file preprocess="xml-stripblanks">shortcuts-dialog.ui</file>
-    <file preprocess="xml-stripblanks">widgets/bookmark_list.ui</file>
-    <file preprocess="xml-stripblanks">widgets/bookmark_row.ui</file>
+    <file preprocess="xml-stripblanks">widgets/bookmark_card.ui</file>
+    <file preprocess="xml-stripblanks">widgets/bookmark_feed.ui</file>
     <file preprocess="xml-stripblanks">widgets/preferences.ui</file>
     <file preprocess="xml-stripblanks">window.ui</file>
   </gresource>
