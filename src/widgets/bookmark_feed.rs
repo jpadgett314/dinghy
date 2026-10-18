@@ -54,11 +54,11 @@ mod imp {
                 let item = item
                     .downcast_ref::<gtk::ListItem>()
                     .expect("factory item should be a ListItem");
-                let row = item
+                let card = item
                     .item()
                     .and_downcast::<BookmarkCard>()
                     .expect("model item should be a BookmarkCard");
-                item.set_child(Some(&row));
+                item.set_child(Some(&card));
             });
 
             self.factory.connect_unbind(|_, item| {
