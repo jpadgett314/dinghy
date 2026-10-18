@@ -52,6 +52,7 @@ mod imp {
             let api2 = LinkDingClient::new(&url, &tok);
             let bookmark_model = BookmarkModel::new(api2);
 
+            // TODO: update without restart
             /*
             settings.connect_changed(Some("server-url"), move |settings, key| {
                 replace_api()
@@ -202,6 +203,7 @@ impl DinghyApplication {
     fn search_bookmarks(&self, query: String) {
         let window = self.dinghy_window();
 
+        // TODO: do in glib::spawn_future_local + gio::spawn_blocking
         let bookmarks_widget = window.imp().bookmark_list_widget.get();
         let bookmarks = self.imp().bookmark_model.search(query, 0);
 
