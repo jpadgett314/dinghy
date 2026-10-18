@@ -10,7 +10,7 @@ mod imp {
     use super::*;
 
     #[derive(Default, gtk::CompositeTemplate)]
-    #[template(resource = "/io/github/jpadgett314/Dinghy/widgets/bookmark_feed.ui")]
+    #[template(resource = "/io/github/jpadgett314/Dinghy/widgets/bookmark_feed/bookmark_feed.ui")]
     pub struct BookmarkFeed {
         pub model: std::cell::OnceCell<ListStore>,
         #[template_child]

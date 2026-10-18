@@ -6,7 +6,7 @@ mod imp {
     use super::*;
 
     #[derive(Debug, Default, gtk::CompositeTemplate)]
-    #[template(resource = "/io/github/jpadgett314/Dinghy/widgets/preferences.ui")]
+    #[template(resource = "/io/github/jpadgett314/Dinghy/widgets/preferences/preferences.ui")]
     pub struct PreferencesDialog {
         #[template_child]
         pub server_url_row: TemplateChild<adw::EntryRow>,
