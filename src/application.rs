@@ -24,7 +24,7 @@ use gettextrs::{gettext};
 use gtk::{gio, glib};
 use linkding::LinkDingClient;
 
-use crate::models::BookmarkModel;
+use crate::bookmark_store::BookmarkStore;
 use crate::config::VERSION;
 use crate::connection::{Connection, ConnectionStatus};
 use crate::widgets::PreferencesDialog;
@@ -35,7 +35,7 @@ mod imp {
 
     #[derive(Debug)]
     pub struct DinghyApplication {
-        pub bookmark_model: BookmarkModel,
+        pub bookmark_store: BookmarkStore,
         pub connection: Connection,
         pub settings: gio::Settings,
     }
@@ -50,7 +50,7 @@ mod imp {
             let api1 = LinkDingClient::new(&url, &tok);
             let connection = Connection::new(api1);
             let api2 = LinkDingClient::new(&url, &tok);
-            let bookmark_model = BookmarkModel::new(api2);
+            let bookmark_store = BookmarkStore::new(api2);
 
             // TODO: update without restart
             /*
@@ -62,7 +62,7 @@ mod imp {
             });
             */
 
-            Self { bookmark_model, connection, settings }
+            Self { bookmark_store, connection, settings }
         }
     }
 
@@ -104,6 +104,7 @@ mod imp {
             window.present();
 
             application.setup_search();
+            application.setup_feed();
         }
     }
 
@@ -127,8 +128,7 @@ impl DinghyApplication {
     }
 
     fn dinghy_window(&self) -> DinghyWindow {
-        self
-            .active_window()
+        self.active_window()
             .and_downcast::<DinghyWindow>()
             .expect("Active window should be a DinghyWindow")
     }
@@ -186,9 +186,19 @@ impl DinghyApplication {
 
         search_entry.connect_search_changed(move |entry| {
             let query: String = entry.text().into();
-            application.search_bookmarks(query);
+            application.imp().bookmark_store.fetch_query(query);
+            application.update_title();
             return;
         });
+    }
+
+    fn setup_feed(&self) {
+        let window = self.dinghy_window();
+
+        let store = self.imp().bookmark_store.clone();
+        let feed = window.imp().bookmark_feed_widget.get();
+
+        feed.set_model(store);
     }
 
     fn refresh_bookmarks(&self) {
@@ -197,19 +207,7 @@ impl DinghyApplication {
         let entry = window.imp().search_entry.get();
         let query = entry.text().to_string();
 
-        self.search_bookmarks(query);
-    }
-
-    fn search_bookmarks(&self, query: String) {
-        let window = self.dinghy_window();
-
-        // TODO: do in glib::spawn_future_local + gio::spawn_blocking
-        let bookmarks_widget = window.imp().bookmark_feed_widget.get();
-        let bookmarks = self.imp().bookmark_model.search(query, 0);
-
-        bookmarks_widget.replace(&bookmarks);
-
-        self.update_title();
+        self.imp().bookmark_store.fetch_query(query);
     }
 
     fn toggle_search(&self) {

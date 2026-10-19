@@ -1,22 +1,24 @@
+use std::sync::Arc;
+
 use linkding::{LinkDingClient, ListBookmarksArgs};
 
 use crate::bookmark_record::{BookmarkRecord, to_create_req, to_internal, to_update_req};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct BookmarkModel {
-    pub api: LinkDingClient
+    pub api: Arc<LinkDingClient>,
 }
 
 impl BookmarkModel {
     pub fn new(api: LinkDingClient) -> Self {
-        Self { api }
+        Self { api: Arc::new(api) }
     }
 
     pub fn search(&self, q: String, p: i32) -> Vec<BookmarkRecord> {
         let req = ListBookmarksArgs {
             query: Some(q),
-            limit: Some(100),
-            offset: Some(100 * p),
+            limit: Some(10),
+            offset: Some(10 * p),
             modified_since: None,
         };
 
@@ -79,7 +81,7 @@ impl BookmarkModel {
 
 impl Default for BookmarkModel {
     fn default() -> Self {
-        Self { api: LinkDingClient::new("localhost:9090", "") }
+        Self::new(LinkDingClient::new("localhost:9090", ""))
     }
 }
 

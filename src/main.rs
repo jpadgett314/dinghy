@@ -20,6 +20,7 @@
 
 mod application;
 mod bookmark_record;
+mod bookmark_store;
 mod config;
 mod connection;
 mod icon_cache;
