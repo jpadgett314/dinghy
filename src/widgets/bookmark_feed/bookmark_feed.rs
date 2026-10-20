@@ -4,7 +4,7 @@ use adw::prelude::*;
 use adw::subclass::prelude::*;
 use gtk::{glib, PositionType};
 
-use crate::bookmark_store::BookmarkStore;
+use crate::bookmark_pagination::BookmarkPagination;
 use crate::widgets::BookmarkCard;
 
 mod imp {
@@ -13,7 +13,7 @@ mod imp {
     #[derive(Default, gtk::CompositeTemplate)]
     #[template(resource = "/io/github/jpadgett314/Dinghy/widgets/bookmark_feed/bookmark_feed.ui")]
     pub struct BookmarkFeed {
-        pub model: Mutex<BookmarkStore>,
+        pub model: Mutex<BookmarkPagination>,
         #[template_child]
         pub list: gtk::TemplateChild<gtk::ListView>,
         #[template_child]
@@ -43,7 +43,7 @@ mod imp {
         fn constructed(&self) {
             self.parent_constructed();
 
-            let model = BookmarkStore::default();
+            let model = BookmarkPagination::default();
 
             self.setup_factory();
             self.setup_infinite_scroll();
@@ -122,11 +122,11 @@ mod imp {
             });
         }
 
-        pub fn get_model(&self) -> BookmarkStore {
+        pub fn get_model(&self) -> BookmarkPagination {
             self.model.lock().unwrap().clone()
         }
 
-        pub fn set_model(&self, model: BookmarkStore) {
+        pub fn set_model(&self, model: BookmarkPagination) {
             let mut model_guard = self.model.lock().unwrap();
             *model_guard = model.clone();
             self.selection.set_model(Some(&model));
@@ -144,11 +144,11 @@ glib::wrapper! {
 }
 
 impl BookmarkFeed {
-    pub fn get_model(&self) -> BookmarkStore {
+    pub fn get_model(&self) -> BookmarkPagination {
         self.imp().get_model()
     }
 
-    pub fn set_model(&self, model: BookmarkStore) {
+    pub fn set_model(&self, model: BookmarkPagination) {
         self.imp().set_model(model)
     }
 }

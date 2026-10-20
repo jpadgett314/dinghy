@@ -1,54 +1,39 @@
+use std::cell::OnceCell;
 use std::sync::Mutex;
 
 use adw::prelude::*;
 use adw::subclass::prelude::*;
 use gtk::{gio, glib};
-use gio::prelude::ListModelExt;
-use gio::spawn_blocking;
-use glib::spawn_future_local;
-use linkding::LinkDingClient;
 
+use crate::bookmark_storage::BookmarkStorage;
 use crate::widgets::BookmarkCard;
-use crate::models::BookmarkModel;
 
 mod imp {
     use super::*;
 
-    #[derive(Debug)]
-    pub struct BookmarkStoreState {
-        pub bookmarks: BookmarkModel,
+    #[derive(Debug, Default)]
+    pub struct BookmarkPaginationState {
+        pub bookmarks: BookmarkStorage,
         pub bookmark_cards: Vec<BookmarkCard>,
         pub query: String,
         pub query_page: i32,
+        pub settings: OnceCell<gio::Settings>,
     }
 
-    #[derive(Debug)]
-    pub struct BookmarkStore {
-        pub state: Mutex<BookmarkStoreState>,
+    #[derive(Debug, Default)]
+    pub struct BookmarkPagination {
+        pub state: Mutex<BookmarkPaginationState>,
     }
 
     #[glib::object_subclass]
-    impl ObjectSubclass for BookmarkStore {
-        const NAME: &str = "BookmarkStore";
-        type Type = super::BookmarkStore;
+    impl ObjectSubclass for BookmarkPagination {
+        const NAME: &str = "BookmarkPagination";
+        type Type = super::BookmarkPagination;
         type ParentType = glib::Object;
         type Interfaces = (gio::ListModel,);
     }
 
-    impl Default for BookmarkStore {
-        fn default() -> Self {
-            let state = BookmarkStoreState {
-                bookmarks: BookmarkModel::default(),
-                bookmark_cards: Vec::default(),
-                query: String::new(),
-                query_page: 0,
-            };
-
-            Self { state: Mutex::new(state) }
-        }
-    }
-
-    impl ListModelImpl for BookmarkStore {
+    impl ListModelImpl for BookmarkPagination {
         fn item_type(&self) -> glib::Type {
             BookmarkCard::static_type()
         }
@@ -71,7 +56,7 @@ mod imp {
         }
     }
 
-    impl BookmarkStore {
+    impl BookmarkPagination {
         pub fn fetch_query(&self, query: String) {
             {
                 let mut state = self.state.lock().unwrap();
@@ -95,31 +80,38 @@ mod imp {
         }
 
         pub fn fetch_and_splice(&self, position: usize) {
-            let (bookmarks, query, page, count) = {
+            let (bookmarks, count, query, page, page_size) = {
                 let state = self.state.lock().unwrap();
 
                 (
                     state.bookmarks.clone(),
+                    state.bookmark_cards.len(),
                     state.query.clone(),
                     state.query_page,
-                    state.bookmark_cards.len(),
+                    state.settings
+                        .get()
+                        .map(|s| s.get::<u32>("max-bookmarks-per-query") as i32)
+                        .unwrap_or(1000),
                 )
             };
 
             // A copy for the callback, to avoid premature destruction
             let store = self.obj().clone();
 
-            spawn_future_local(async move {
-                let reply = spawn_blocking(move || { bookmarks.search(query, page) }).await;
+            glib::spawn_future_local(async move {
+                let reply = gio::spawn_blocking(move || { bookmarks.search(query, page, page_size) }).await;
 
-                // Connection error
-                let Ok(matches) = reply else { return };
+                let Ok(matches) = reply else {
+                    return
+                };
 
-                // No bookmarks found
-                if matches.len() < 1 { return; }
+                if matches.len() < 1 {
+                    return;
+                }
 
-                // Attempting to place beyond end
-                if count < position as usize { return; }
+                if count < position as usize {
+                    return;
+                }
 
                 let added = matches.len();
                 let taken = {
@@ -141,25 +133,23 @@ mod imp {
         }
     }
 
-    impl ObjectImpl for BookmarkStore {}
+    impl ObjectImpl for BookmarkPagination {}
 }
 
 glib::wrapper! {
-    pub struct BookmarkStore(ObjectSubclass<imp::BookmarkStore>)
+    pub struct BookmarkPagination(ObjectSubclass<imp::BookmarkPagination>)
         @implements gio::ListModel;
 }
 
-impl BookmarkStore {
-    pub fn new(api: LinkDingClient) -> Self {
-        let object: BookmarkStore = glib::Object::builder().build();
+impl BookmarkPagination {
+    pub fn new(api: BookmarkStorage, cfg: gio::Settings) -> Self {
+        let object: BookmarkPagination = glib::Object::builder().build();
 
         {
-            object
-                .imp()
-                .state
-                .lock()
-                .unwrap()
-                .bookmarks = BookmarkModel::new(api);
+            let mut state = object.imp().state.lock().unwrap();
+
+            state.bookmarks = api.clone();
+            state.settings = OnceCell::from(cfg.clone());
         }
 
         object
@@ -174,7 +164,7 @@ impl BookmarkStore {
     }
 }
 
-impl Default for BookmarkStore {
+impl Default for BookmarkPagination {
     fn default() -> Self {
         glib::Object::builder().build()
     }

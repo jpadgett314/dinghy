@@ -24,7 +24,8 @@ use gettextrs::{gettext};
 use gtk::{gio, glib};
 use linkding::LinkDingClient;
 
-use crate::bookmark_store::BookmarkStore;
+use crate::bookmark_storage::BookmarkStorage;
+use crate::bookmark_pagination::BookmarkPagination;
 use crate::config::VERSION;
 use crate::connection::{Connection, ConnectionStatus};
 use crate::widgets::PreferencesDialog;
@@ -35,7 +36,10 @@ mod imp {
 
     #[derive(Debug)]
     pub struct DinghyApplication {
-        pub bookmark_store: BookmarkStore,
+        pub api: LinkDingClient,
+
+        pub bookmark_storage: BookmarkStorage,
+        pub bookmark_pagination: BookmarkPagination,
         pub connection: Connection,
         pub settings: gio::Settings,
     }
@@ -43,27 +47,15 @@ mod imp {
     impl Default for DinghyApplication {
         fn default() -> Self {
             let settings = gio::Settings::new("io.github.jpadgett314.Dinghy");
-            let url: String = settings.get("server-url");
+            let url: String = settings.get("api-url");
             let tok: String = settings.get("api-token");
 
-            // TODO: Arc this or something
-            // LinkDingClient is not cloneable
-            let api1 = LinkDingClient::new(&url, &tok);
-            let connection = Connection::new(api1);
-            let api2 = LinkDingClient::new(&url, &tok);
-            let bookmark_store = BookmarkStore::new(api2);
+            let api = LinkDingClient::new(&url, &tok);
+            let connection = Connection::new(api.clone());
+            let bookmark_storage = BookmarkStorage::new(api.clone());
+            let bookmark_pagination = BookmarkPagination::new(bookmark_storage.clone(), settings.clone());
 
-            // TODO: update without restart
-            /*
-            settings.connect_changed(Some("server-url"), move |settings, key| {
-                replace_api()
-            });
-            settings.connect_changed(Some("api-key"), move |settings, key| {
-                replace_api()
-            });
-            */
-
-            Self { bookmark_store, connection, settings }
+            Self { api, bookmark_storage, bookmark_pagination, connection, settings }
         }
     }
 
@@ -104,6 +96,7 @@ mod imp {
 
             application.setup_search();
             application.setup_feed();
+            application.setup_setting_callbacks();
 
             window.present();
         }
@@ -153,6 +146,41 @@ impl DinghyApplication {
         self.add_action_entries([quit_action, about_action, preferences_action, refresh_bookmarks_action, toggle_search_action]);
     }
 
+    fn setup_search(&self) {
+        let window = self.dinghy_window();
+
+        let search_entry = window.imp().search_entry.get();
+        let application = self.clone();
+
+        search_entry.connect_search_changed(move |entry| {
+            let query: String = entry.text().into();
+            application.imp().bookmark_pagination.fetch_query(query);
+            application.refresh_title();
+            return;
+        });
+    }
+
+    fn setup_feed(&self) {
+        let window = self.dinghy_window();
+
+        let store = self.imp().bookmark_pagination.clone();
+        let feed = window.imp().bookmark_feed_widget.get();
+
+        feed.set_model(store);
+    }
+
+    fn setup_setting_callbacks(&self) {
+        // TODO
+        /*
+        settings.connect_changed(Some("api-url"), move |settings, key| {
+            replace_api()
+        });
+        settings.connect_changed(Some("api-token"), move |settings, key| {
+            replace_api()
+        });
+        */
+    }
+
     fn show_about(&self) {
         let window = self.dinghy_window();
 
@@ -179,29 +207,6 @@ impl DinghyApplication {
         dialog.present(Some(&window));
     }
 
-    fn setup_search(&self) {
-        let window = self.dinghy_window();
-
-        let search_entry = window.imp().search_entry.get();
-        let application = self.clone();
-
-        search_entry.connect_search_changed(move |entry| {
-            let query: String = entry.text().into();
-            application.imp().bookmark_store.fetch_query(query);
-            application.refresh_title();
-            return;
-        });
-    }
-
-    fn setup_feed(&self) {
-        let window = self.dinghy_window();
-
-        let store = self.imp().bookmark_store.clone();
-        let feed = window.imp().bookmark_feed_widget.get();
-
-        feed.set_model(store);
-    }
-
     fn toggle_search(&self) {
         let window = self.dinghy_window();
 
@@ -221,14 +226,14 @@ impl DinghyApplication {
         let entry = window.imp().search_entry.get();
         let query = entry.text().to_string();
 
-        self.imp().bookmark_store.fetch_query(query);
+        self.imp().bookmark_pagination.fetch_query(query);
     }
 
     fn refresh_title(&self) {
         let window = self.dinghy_window();
 
         let title_widget = window.imp().window_title_widget.get();
-        let title: String = self.imp().settings.get("server-url");
+        let title: String = self.imp().settings.get("api-url");
 
         title_widget.set_title(&title);
 

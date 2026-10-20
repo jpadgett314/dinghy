@@ -19,12 +19,12 @@
  */
 
 mod application;
+mod bookmark_pagination;
 mod bookmark_record;
-mod bookmark_store;
+mod bookmark_storage;
 mod config;
 mod connection;
 mod icon_cache;
-mod models;
 mod widgets;
 mod window;
 
