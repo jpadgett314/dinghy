@@ -6,7 +6,7 @@
     <property name="orientation">vertical</property>
     <property name="spacing">16</property>
     <child>
-      <object class="GtkScrolledWindow">
+      <object class="GtkScrolledWindow" id="scroll_window">
         <property name="vexpand">True</property>
         <property name="hexpand">True</property>
         <property name="hscrollbar-policy">never</property>

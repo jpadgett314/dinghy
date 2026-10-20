@@ -2,7 +2,7 @@ use std::sync::Mutex;
 
 use adw::prelude::*;
 use adw::subclass::prelude::*;
-use gtk::glib;
+use gtk::{glib, PositionType};
 
 use crate::bookmark_store::BookmarkStore;
 use crate::widgets::BookmarkCard;
@@ -20,6 +20,8 @@ mod imp {
         pub selection: gtk::TemplateChild<gtk::NoSelection>,
         #[template_child]
         pub factory: gtk::TemplateChild<gtk::SignalListItemFactory>,
+        #[template_child]
+        pub scroll_window: gtk::TemplateChild<gtk::ScrolledWindow>,
     }
 
     #[glib::object_subclass]
@@ -43,10 +45,21 @@ mod imp {
 
             let model = BookmarkStore::default();
 
+            self.setup_factory();
+            self.setup_infinite_scroll();
+            self.setup_click_activation();
+            self.selection.set_model(Some(&model));
+            self.set_model(model);
+        }
+    }
+
+    impl BookmarkFeed {
+        fn setup_factory(&self) {
             self.factory.connect_setup(|_, item| {
                 let item = item
                     .downcast_ref::<gtk::ListItem>()
                     .expect("factory item should be a ListItem");
+
                 item.set_selectable(false);
                 item.set_activatable(true);
             });
@@ -55,10 +68,12 @@ mod imp {
                 let item = item
                     .downcast_ref::<gtk::ListItem>()
                     .expect("factory item should be a ListItem");
+
                 let card = item
                     .item()
                     .and_downcast::<BookmarkCard>()
                     .expect("model item should be a BookmarkCard");
+
                 item.set_child(Some(&card));
             });
 
@@ -67,31 +82,46 @@ mod imp {
                     .expect("factory item should be a ListItem")
                     .set_child(None::<&gtk::Widget>);
             });
+        }
 
-            self.selection.set_model(Some(&model));
-
+        pub fn setup_click_activation(&self) {
             let weak_list = self.obj().downgrade();
-            self.list.connect_activate(move |_, position| {
-                if let Some(list) = weak_list.upgrade() {
-                    let content = list
-                        .imp()
-                        .model
-                        .lock()
-                        .unwrap()
-                        .item(position)
-                        .and_downcast::<BookmarkCard>();
 
-                    if let Some(card) = content {
-                        card.open();
-                    }
+            self.list.connect_activate(move |_, position| {
+                let Some(list) = weak_list.upgrade() else {
+                    return
+                };
+
+                let content = list
+                    .imp()
+                    .model
+                    .lock()
+                    .unwrap()
+                    .item(position)
+                    .and_downcast::<BookmarkCard>();
+
+                if let Some(card) = content {
+                    card.open();
                 }
             });
-
-            self.set_model(model);
         }
-    }
 
-    impl BookmarkFeed {
+        pub fn setup_infinite_scroll(&self) {
+            let weak_list = self.obj().downgrade();
+
+            self.scroll_window.connect_edge_reached(move |_, pos| {
+                if pos != PositionType::Bottom {
+                    return
+                }
+
+                let Some(list) = weak_list.upgrade() else {
+                    return
+                };
+
+                list.imp().model.lock().unwrap().fetch_more();
+            });
+        }
+
         pub fn get_model(&self) -> BookmarkStore {
             self.model.lock().unwrap().clone()
         }
@@ -99,7 +129,6 @@ mod imp {
         pub fn set_model(&self, model: BookmarkStore) {
             let mut model_guard = self.model.lock().unwrap();
             *model_guard = model.clone();
-            // self.model.replace(model.clone());
             self.selection.set_model(Some(&model));
         }
     }

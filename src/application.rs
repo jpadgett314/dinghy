@@ -46,6 +46,7 @@ mod imp {
             let url: String = settings.get("server-url");
             let tok: String = settings.get("api-token");
 
+            // TODO: Arc this or something
             // LinkDingClient is not cloneable
             let api1 = LinkDingClient::new(&url, &tok);
             let connection = Connection::new(api1);
@@ -101,10 +102,10 @@ mod imp {
                 window.upcast()
             });
 
-            window.present();
-
             application.setup_search();
             application.setup_feed();
+
+            window.present();
         }
     }
 
@@ -187,7 +188,7 @@ impl DinghyApplication {
         search_entry.connect_search_changed(move |entry| {
             let query: String = entry.text().into();
             application.imp().bookmark_store.fetch_query(query);
-            application.update_title();
+            application.refresh_title();
             return;
         });
     }
@@ -199,15 +200,6 @@ impl DinghyApplication {
         let feed = window.imp().bookmark_feed_widget.get();
 
         feed.set_model(store);
-    }
-
-    fn refresh_bookmarks(&self) {
-        let window = self.dinghy_window();
-
-        let entry = window.imp().search_entry.get();
-        let query = entry.text().to_string();
-
-        self.imp().bookmark_store.fetch_query(query);
     }
 
     fn toggle_search(&self) {
@@ -223,7 +215,16 @@ impl DinghyApplication {
         search_bar.set_search_mode(!active);
     }
 
-    fn update_title(&self) {
+    fn refresh_bookmarks(&self) {
+        let window = self.dinghy_window();
+
+        let entry = window.imp().search_entry.get();
+        let query = entry.text().to_string();
+
+        self.imp().bookmark_store.fetch_query(query);
+    }
+
+    fn refresh_title(&self) {
         let window = self.dinghy_window();
 
         let title_widget = window.imp().window_title_widget.get();
