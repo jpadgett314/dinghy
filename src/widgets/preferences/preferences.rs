@@ -9,9 +9,11 @@ mod imp {
     #[template(resource = "/io/github/jpadgett314/Dinghy/widgets/preferences/preferences.ui")]
     pub struct PreferencesDialog {
         #[template_child]
-        pub server_url_row: TemplateChild<adw::EntryRow>,
+        pub api_url_row: TemplateChild<adw::EntryRow>,
         #[template_child]
         pub api_token_row: TemplateChild<adw::EntryRow>,
+        #[template_child]
+        pub max_bookmarks_row: TemplateChild<adw::SpinRow>,
     }
 
     #[glib::object_subclass]
@@ -50,11 +52,15 @@ impl PreferencesDialog {
         let imp = self.imp();
 
         settings
-            .bind("server-url", &*imp.server_url_row, "text")
+            .bind("api-url", &*imp.api_url_row, "text")
             .build();
 
         settings
             .bind("api-token", &*imp.api_token_row, "text")
+            .build();
+
+        settings
+            .bind("max-bookmarks-per-query", &*imp.max_bookmarks_row, "value")
             .build();
     }
 }

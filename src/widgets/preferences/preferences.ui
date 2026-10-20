@@ -12,17 +12,33 @@
         <child>
           <object class="AdwPreferencesGroup">
             <property name="title" translatable="yes">API Connection</property>
-            <property name="description" translatable="yes">
-              Configure your server URL and authentication token.
-            </property>
             <child>
-              <object class="AdwEntryRow" id="server_url_row">
-                <property name="title" translatable="yes">Server URL</property>
+              <object class="AdwEntryRow" id="api_url_row">
+                <property name="title" translatable="yes">API URL</property>
               </object>
             </child>
             <child>
               <object class="AdwEntryRow" id="api_token_row">
                 <property name="title" translatable="yes">API Token</property>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="AdwPreferencesGroup">
+            <property name="title" translatable="yes">General</property>
+            <child>
+              <object class="AdwSpinRow" id="max_bookmarks_row">
+                <property name="title" translatable="yes">Max Bookmarks Per Query</property>
+                <property name="adjustment">
+                  <object class="GtkAdjustment">
+                    <property name="lower">10</property>
+                    <property name="upper">100000</property>
+                    <property name="step-increment">100</property>
+                    <property name="page-increment">1000</property>
+                    <property name="value">100</property>
+                  </object>
+                </property>
               </object>
             </child>
           </object>

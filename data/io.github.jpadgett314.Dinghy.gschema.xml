@@ -1,11 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <schemalist gettext-domain="dinghy">
 	<schema id="io.github.jpadgett314.Dinghy" path="/io/github/jpadgett314/Dinghy/">
-    <key name="server-url" type="s">
+    <key name="api-url" type="s">
       <default>'http://localhost:9090'</default>
     </key>
     <key name="api-token" type="s">
       <default>''</default>
     </key>
+	  <key name="max-bookmarks-per-query" type="u">
+      <default>1000</default>
+	  </key>
 	</schema>
 </schemalist>
