@@ -6,7 +6,7 @@ use adw::subclass::prelude::*;
 use gtk::{gio, glib};
 
 use crate::bookmark_storage::BookmarkStorage;
-use crate::widgets::BookmarkCard;
+use crate::views::BookmarkCard;
 
 mod imp {
     use super::*;

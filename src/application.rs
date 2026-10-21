@@ -25,10 +25,10 @@ use gtk::{gio, glib};
 use linkding::LinkDingClient;
 
 use crate::bookmark_storage::BookmarkStorage;
-use crate::bookmark_pagination::BookmarkPagination;
 use crate::config::VERSION;
 use crate::connection::{Connection, ConnectionStatus};
-use crate::widgets::PreferencesDialog;
+use crate::models::BookmarkPagination;
+use crate::views::PreferencesDialog;
 use crate::DinghyWindow;
 
 mod imp {

@@ -4,14 +4,14 @@ use adw::prelude::*;
 use adw::subclass::prelude::*;
 use gtk::{glib, PositionType};
 
-use crate::bookmark_pagination::BookmarkPagination;
-use crate::widgets::BookmarkCard;
+use crate::models::BookmarkPagination;
+use crate::views::BookmarkCard;
 
 mod imp {
     use super::*;
 
     #[derive(Default, gtk::CompositeTemplate)]
-    #[template(resource = "/io/github/jpadgett314/Dinghy/widgets/bookmark_feed/bookmark_feed.ui")]
+    #[template(resource = "/io/github/jpadgett314/Dinghy/views/bookmark_feed/bookmark_feed.ui")]
     pub struct BookmarkFeed {
         pub model: Mutex<BookmarkPagination>,
         #[template_child]

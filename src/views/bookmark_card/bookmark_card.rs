@@ -10,7 +10,7 @@ mod imp {
     use super::*;
 
     #[derive(Debug, Default, gtk::CompositeTemplate)]
-    #[template(resource = "/io/github/jpadgett314/Dinghy/widgets/bookmark_card/bookmark_card.ui")]
+    #[template(resource = "/io/github/jpadgett314/Dinghy/views/bookmark_card/bookmark_card.ui")]
     pub struct BookmarkCard {
         pub bookmark: OnceCell<BookmarkRecord>,
         #[template_child]

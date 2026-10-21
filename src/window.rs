@@ -23,7 +23,7 @@ use adw::WindowTitle;
 use gtk::prelude::*;
 use gtk::{gio, glib, SearchBar, SearchEntry, ToggleButton};
 
-use crate::widgets::BookmarkFeed;
+use crate::views::BookmarkFeed;
 
 mod imp {
     use super::*;

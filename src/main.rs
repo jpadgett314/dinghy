@@ -19,13 +19,13 @@
  */
 
 mod application;
-mod bookmark_pagination;
 mod bookmark_record;
 mod bookmark_storage;
 mod config;
 mod connection;
 mod icon_cache;
-mod widgets;
+mod models;
+mod views;
 mod window;
 
 use self::application::DinghyApplication;
