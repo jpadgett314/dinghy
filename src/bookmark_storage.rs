@@ -30,7 +30,7 @@ impl BookmarkStorage {
             Ok(data) => {
                 data.results
                     .iter()
-                    .map(|v| to_internal(v))
+                    .map(to_internal)
                     .collect()
             }
             Err(e) => {
