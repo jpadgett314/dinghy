@@ -6,5 +6,3 @@
 
 <p align="center">Bringing Linkding bookmarks to GNOME</p>
 
----
-

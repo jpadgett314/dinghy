@@ -29,7 +29,7 @@ mod imp {
     use super::*;
 
     #[derive(Debug, Default, gtk::CompositeTemplate)]
-    #[template(resource = "/io/github/jpadgett314/Dinghy/window.ui")]
+    #[template(resource = "/io/github/jpadgett314/Dinghy/views/window/window.ui")]
     pub struct DinghyWindow {
         #[template_child]
         pub bookmark_feed_widget: TemplateChild<BookmarkFeed>,

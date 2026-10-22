@@ -6,6 +6,6 @@
     <file preprocess="xml-stripblanks">views/bookmark_card/bookmark_card.ui</file>
     <file preprocess="xml-stripblanks">views/bookmark_feed/bookmark_feed.ui</file>
     <file preprocess="xml-stripblanks">views/preferences/preferences.ui</file>
-    <file preprocess="xml-stripblanks">window.ui</file>
+    <file preprocess="xml-stripblanks">views/window/window.ui</file>
   </gresource>
 </gresources>

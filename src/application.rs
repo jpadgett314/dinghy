@@ -28,8 +28,8 @@ use crate::bookmark_storage::BookmarkStorage;
 use crate::config::VERSION;
 use crate::connection::{Connection, ConnectionStatus};
 use crate::models::BookmarkPagination;
+use crate::views::DinghyWindow;
 use crate::views::PreferencesDialog;
-use crate::DinghyWindow;
 
 mod imp {
     use super::*;

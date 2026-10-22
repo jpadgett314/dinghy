@@ -26,10 +26,8 @@ mod connection;
 mod icon_cache;
 mod models;
 mod views;
-mod window;
 
 use self::application::DinghyApplication;
-use self::window::DinghyWindow;
 
 use config::{GETTEXT_PACKAGE, LOCALEDIR, PKGDATADIR};
 use gettextrs::{bind_textdomain_codeset, bindtextdomain, textdomain};
