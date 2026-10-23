@@ -46,6 +46,7 @@ mod imp {
         fn class_init(klass: &mut Self::Class) {
             BookmarkFeed::ensure_type();
             klass.bind_template();
+            klass.bind_template_instance_callbacks();
             klass.install_action("client.refresh-bookmarks", None, |client, _, _| {
                 client.refresh_bookmarks();
             });
@@ -66,10 +67,8 @@ mod imp {
     impl ObjectImpl for DinghyClient {
         fn constructed(&self) {
             self.parent_constructed();
-            let obj = self.obj();
 
-            obj.connect_settings_notify(|client| client.setup_data());
-            obj.connect_connection_notify(|client| client.setup_data());
+            let obj = self.obj();
             self.search_entry.connect_search_changed(glib::clone!(
                 #[weak]
                 obj,
@@ -78,7 +77,7 @@ mod imp {
                     obj.refresh_title();
                 }
             ));
-            obj.setup_data();
+            obj.on_notify_property();
         }
 
         fn dispose(&self) {
@@ -95,8 +94,10 @@ glib::wrapper! {
         @implements gtk::Accessible, gtk::Buildable, gtk::ConstraintTarget, gtk::Orientable;
 }
 
+#[gtk::template_callbacks]
 impl DinghyClient {
-    fn setup_data(&self) {
+    #[template_callback]
+    fn on_notify_property(&self) {
         if self.bookmark_pagination().is_some() {
             return;
         }
