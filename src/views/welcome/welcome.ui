@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <requires lib="gtk" version="4.0"/>
+  <requires lib="Adw" version="1.0"/>
+  <template class="DinghyWelcome" parent="GtkBox">
+    <property name="orientation">vertical</property>
+    <child>
+      <object class="AdwToolbarView">
+        <property name="vexpand">True</property>
+        <child type="top">
+          <object class="AdwHeaderBar">
+            <property name="show-title">False</property>
+          </object>
+        </child>
+        <property name="content">
+          <object class="AdwStatusPage">
+            <property name="icon-name">user-bookmarks-symbolic</property>
+            <property name="title" translatable="yes">Welcome to Dinghy</property>
+            <property name="description" translatable="yes">Connect your Linkding instance to start browsing</property>
+            <property name="child">
+              <object class="GtkButton">
+                <property name="label" translatable="yes">Connect Instance</property>
+                <property name="halign">center</property>
+                <style>
+                  <class name="suggested-action"/>
+                  <class name="pill"/>
+                </style>
+              </object>
+            </property>
+          </object>
+        </property>
+      </object>
+    </child>
+  </template>
+</interface>

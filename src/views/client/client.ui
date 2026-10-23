@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <requires lib="gtk" version="4.0"/>
+  <requires lib="Adw" version="1.0"/>
+  <template class="DinghyClient" parent="GtkBox">
+    <property name="orientation">vertical</property>
+    <child>
+      <object class="AdwToolbarView" id="toolbar_view">
+        <property name="vexpand">True</property>
+        <child type="top">
+          <object class="AdwHeaderBar">
+            <property name="title-widget">
+              <object class="AdwWindowTitle" id="window_title_widget">
+                <property name="title">Dinghy</property>
+                <property name="subtitle"></property>
+              </object>
+            </property>
+            <child>
+              <object class="GtkButton">
+                <property name="icon-name">view-refresh-symbolic</property>
+                <property name="action-name">client.refresh-bookmarks</property>
+                <property name="tooltip-text" translatable="yes">Refresh Bookmarks</property>
+              </object>
+            </child>
+            <child type="end">
+              <object class="GtkMenuButton">
+                <property name="primary">True</property>
+                <property name="icon-name">open-menu-symbolic</property>
+                <property name="tooltip-text" translatable="yes">Main Menu</property>
+                <property name="menu-model">primary_menu</property>
+              </object>
+            </child>
+            <child type="end">
+              <object class="GtkToggleButton" id="search_toggle_button">
+                <property name="icon-name">system-search-symbolic</property>
+                <property name="action-name">client.toggle-search</property>
+                <property name="tooltip-text" translatable="yes">Search</property>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child type="top">
+          <object class="GtkSearchBar" id="search_bar">
+            <property name="key-capture-widget">toolbar_view</property>
+            <property name="show_close_button">False</property>
+            <child>
+              <object class="GtkSearchEntry" id="search_entry">
+                <property name="search-delay">100</property>
+              </object>
+            </child>
+          </object>
+        </child>
+        <property name="content">
+          <object class="BookmarkFeed" id="bookmark_feed_widget"/>
+        </property>
+      </object>
+    </child>
+  </template>
+  <menu id="primary_menu">
+    <section>
+      <item>
+        <attribute name="label" translatable="yes">_Preferences</attribute>
+        <attribute name="action">app.preferences</attribute>
+      </item>
+      <item>
+        <attribute name="label" translatable="yes">_Keyboard Shortcuts</attribute>
+        <attribute name="action">app.shortcuts</attribute>
+      </item>
+      <item>
+        <attribute name="label" translatable="yes">_About Dinghy</attribute>
+        <attribute name="action">app.about</attribute>
+      </item>
+    </section>
+  </menu>
+</interface>

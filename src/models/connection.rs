@@ -1,3 +1,6 @@
+use std::cell::OnceCell;
+
+use gtk::{glib, subclass::prelude::*};
 use linkding::{LinkDingClient, ListBookmarksArgs};
 
 #[derive(Debug, Default, Copy, Clone)]
@@ -11,14 +14,41 @@ pub enum ConnectionStatus {
     Disconnected,
 }
 
-#[derive(Debug)]
-pub struct Connection {
-    api: LinkDingClient,
+mod imp {
+    use super::*;
+
+    #[derive(Debug, Default)]
+    pub struct Connection {
+        pub api: OnceCell<LinkDingClient>,
+    }
+
+    #[glib::object_subclass]
+    impl ObjectSubclass for Connection {
+        const NAME: &'static str = "DinghyConnection";
+        type Type = super::Connection;
+        type ParentType = glib::Object;
+    }
+
+    impl ObjectImpl for Connection {}
+}
+
+glib::wrapper! {
+    pub struct Connection(ObjectSubclass<imp::Connection>);
 }
 
 impl Connection {
     pub fn new(api: LinkDingClient) -> Self {
-        Self { api }
+        let object: Self = glib::Object::new();
+        object.imp().api.set(api).unwrap();
+        object
+    }
+
+    pub fn api(&self) -> LinkDingClient {
+        self.imp()
+            .api
+            .get()
+            .expect("Connection should have an API client")
+            .clone()
     }
 
     pub fn status(&self) -> ConnectionStatus {
@@ -29,7 +59,7 @@ impl Connection {
             modified_since: None,
         };
 
-        let res = self.api.list_bookmarks(req);
+        let res = self.api().list_bookmarks(req);
 
         match res {
             Ok(_) => ConnectionStatus::Connected,
@@ -45,7 +75,7 @@ impl Connection {
             modified_since: None,
         };
 
-        let res = self.api.list_bookmarks(req);
+        let res = self.api().list_bookmarks(req);
 
         match res {
             Ok(data) => {
@@ -62,7 +92,7 @@ impl Connection {
 
 impl Default for Connection {
     fn default() -> Self {
-        Self { api: LinkDingClient::new("localhost:9090", "") }
+        Self::new(LinkDingClient::new("localhost:9090", ""))
     }
 }
 

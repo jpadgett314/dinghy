@@ -7,70 +7,31 @@
     <property name="default-width">800</property>
     <property name="default-height">680</property>
     <property name="content">
-      <object class="AdwToolbarView" id="toolbar_view">
-        <child type="top">
-          <object class="AdwHeaderBar">
-            <property name="title-widget">
-              <object class="AdwWindowTitle" id="window_title_widget">
-                <property name="title">Dinghy</property>
-                <property name="subtitle"></property>
-              </object>
-            </property>
+      <object class="AdwToastOverlay">
+        <property name="child">
+          <object class="GtkStack" id="stack">
             <child>
-              <object class="GtkButton">
-                <property name="icon-name">view-refresh-symbolic</property>
-                <property name="action-name">app.refresh-bookmarks</property>
-                <property name="tooltip-text" translatable="yes">Refresh Bookmarks</property>
+              <object class="GtkStackPage">
+                <property name="name">welcome</property>
+                <property name="child">
+                  <object class="DinghyWelcome"/>
+                </property>
               </object>
             </child>
-            <child type="end">
-              <object class="GtkMenuButton">
-                <property name="primary">True</property>
-                <property name="icon-name">open-menu-symbolic</property>
-                <property name="tooltip-text" translatable="yes">Main Menu</property>
-                <property name="menu-model">primary_menu</property>
-              </object>
-            </child>
-            <child type="end">
-              <object class="GtkToggleButton" id="search_toggle_button">
-                <property name="icon-name">system-search-symbolic</property>
-                <property name="action-name">app.toggle-search</property>
-                <property name="tooltip-text" translatable="yes">Search</property>
+            <child>
+              <object class="GtkStackPage">
+                <property name="name">client</property>
+                <property name="child">
+                  <object class="DinghyClient" id="client">
+                    <property name="settings" bind-source="DinghyWindow" bind-property="settings" bind-flags="sync-create"/>
+                    <property name="connection" bind-source="DinghyWindow" bind-property="connection" bind-flags="sync-create"/>
+                  </object>
+                </property>
               </object>
             </child>
           </object>
-        </child>
-        <child type="top">
-          <object class="GtkSearchBar" id="search_bar">
-            <property name="key-capture-widget">toolbar_view</property>
-            <property name="show_close_button">False</property>
-            <child>
-              <object class="GtkSearchEntry" id="search_entry">
-                <property name="search-delay">100</property>
-              </object>
-            </child>
-          </object>
-        </child>
-        <property name="content">
-          <object class="BookmarkFeed" id="bookmark_feed_widget"/>
         </property>
       </object>
     </property>
   </template>
-  <menu id="primary_menu">
-    <section>
-      <item>
-        <attribute name="label" translatable="yes">_Preferences</attribute>
-        <attribute name="action">app.preferences</attribute>
-      </item>
-      <item>
-        <attribute name="label" translatable="yes">_Keyboard Shortcuts</attribute>
-        <attribute name="action">app.shortcuts</attribute>
-      </item>
-      <item>
-        <attribute name="label" translatable="yes">_About Dinghy</attribute>
-        <attribute name="action">app.about</attribute>
-      </item>
-    </section>
-  </menu>
 </interface>

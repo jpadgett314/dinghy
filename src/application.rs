@@ -20,14 +20,12 @@
 
 use adw::prelude::*;
 use adw::subclass::prelude::*;
-use gettextrs::{gettext};
+use gettextrs::gettext;
 use gtk::{gio, glib};
 use linkding::LinkDingClient;
 
-use crate::bookmark_storage::BookmarkStorage;
 use crate::config::VERSION;
-use crate::connection::{Connection, ConnectionStatus};
-use crate::models::BookmarkPagination;
+use crate::models::Connection;
 use crate::views::DinghyWindow;
 use crate::views::PreferencesDialog;
 
@@ -36,10 +34,6 @@ mod imp {
 
     #[derive(Debug)]
     pub struct DinghyApplication {
-        pub api: LinkDingClient,
-
-        pub bookmark_storage: BookmarkStorage,
-        pub bookmark_pagination: BookmarkPagination,
         pub connection: Connection,
         pub settings: gio::Settings,
     }
@@ -51,11 +45,12 @@ mod imp {
             let tok: String = settings.get("api-token");
 
             let api = LinkDingClient::new(&url, &tok);
-            let connection = Connection::new(api.clone());
-            let bookmark_storage = BookmarkStorage::new(api.clone());
-            let bookmark_pagination = BookmarkPagination::new(bookmark_storage.clone(), settings.clone());
+            let connection = Connection::new(api);
 
-            Self { api, bookmark_storage, bookmark_pagination, connection, settings }
+            Self {
+                connection,
+                settings,
+            }
         }
     }
 
@@ -90,13 +85,9 @@ mod imp {
         fn activate(&self) {
             let application = self.obj();
             let window = application.active_window().unwrap_or_else(|| {
-                let window = DinghyWindow::new(&*application);
+                let window = DinghyWindow::new(&*application, &self.settings, &self.connection);
                 window.upcast()
             });
-
-            application.setup_search();
-            application.setup_feed();
-            application.setup_setting_callbacks();
 
             window.present();
         }
@@ -137,48 +128,7 @@ impl DinghyApplication {
         let preferences_action = gio::ActionEntry::builder("preferences")
             .activate(move |app: &Self, _, _| app.show_preferences())
             .build();
-        let refresh_bookmarks_action = gio::ActionEntry::builder("refresh-bookmarks")
-            .activate(move |app: &Self, _, _| app.refresh_bookmarks())
-            .build();
-        let toggle_search_action = gio::ActionEntry::builder("toggle-search")
-            .activate(move |app: &Self, _, _| app.toggle_search())
-            .build();
-        self.add_action_entries([quit_action, about_action, preferences_action, refresh_bookmarks_action, toggle_search_action]);
-    }
-
-    fn setup_search(&self) {
-        let window = self.dinghy_window();
-
-        let search_entry = window.imp().search_entry.get();
-        let application = self.clone();
-
-        search_entry.connect_search_changed(move |entry| {
-            let query: String = entry.text().into();
-            application.imp().bookmark_pagination.fetch_query(query);
-            application.refresh_title();
-            return;
-        });
-    }
-
-    fn setup_feed(&self) {
-        let window = self.dinghy_window();
-
-        let store = self.imp().bookmark_pagination.clone();
-        let feed = window.imp().bookmark_feed_widget.get();
-
-        feed.set_model(store);
-    }
-
-    fn setup_setting_callbacks(&self) {
-        // TODO
-        /*
-        settings.connect_changed(Some("api-url"), move |settings, key| {
-            replace_api()
-        });
-        settings.connect_changed(Some("api-token"), move |settings, key| {
-            replace_api()
-        });
-        */
+        self.add_action_entries([quit_action, about_action, preferences_action]);
     }
 
     fn show_about(&self) {
@@ -205,54 +155,5 @@ impl DinghyApplication {
 
         dialog.bind_settings(&self.imp().settings);
         dialog.present(Some(&window));
-    }
-
-    fn toggle_search(&self) {
-        let window = self.dinghy_window();
-
-        let search_button = window.imp().search_toggle_button.get();
-        let search_bar = window.imp().search_bar.get();
-        let active = search_button.is_active();
-
-        // GtkToggle button doesn't modify its own state, so it's done here
-        search_button.set_active(!active);
-
-        search_bar.set_search_mode(!active);
-    }
-
-    fn refresh_bookmarks(&self) {
-        let window = self.dinghy_window();
-
-        let entry = window.imp().search_entry.get();
-        let query = entry.text().to_string();
-
-        self.imp().bookmark_pagination.fetch_query(query);
-    }
-
-    fn refresh_title(&self) {
-        let window = self.dinghy_window();
-
-        let title_widget = window.imp().window_title_widget.get();
-        let title: String = self.imp().settings.get("api-url");
-
-        title_widget.set_title(&title);
-
-        title_widget.set_subtitle(
-            &match self.imp().connection.status() {
-                ConnectionStatus::Disconnected => gettext("disconnected"),
-                ConnectionStatus::Connected => {
-                    match self.imp().connection.stats() {
-                        None => gettext("disconnected"),
-                        Some(data) => {
-                            match data.bookmark_count {
-                                0 => gettext("no bookmarks"),
-                                1 => gettext("1 bookmark"),
-                                n => gettext("{} bookmarks").replace("{}", &n.to_string()),
-                            }
-                        }
-                    }
-                }
-            }
-        );
     }
 }

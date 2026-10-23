@@ -1,10 +1,12 @@
 use std::sync::Arc;
 
+use gtk::glib;
 use linkding::{LinkDingClient, ListBookmarksArgs};
 
 use crate::bookmark_record::{BookmarkRecord, to_create_req, to_internal, to_update_req};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, glib::Boxed)]
+#[boxed_type(name = "DinghyBookmarkStorage", nullable)]
 pub struct BookmarkStorage {
     pub api: Arc<LinkDingClient>,
 }
@@ -88,4 +90,3 @@ impl Default for BookmarkStorage {
         }
     }
 }
-

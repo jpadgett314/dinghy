@@ -18,29 +18,30 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-use adw::subclass::prelude::*;
-use adw::WindowTitle;
-use gtk::prelude::*;
-use gtk::{gio, glib, SearchBar, SearchEntry, ToggleButton};
+use std::cell::RefCell;
 
-use crate::views::BookmarkFeed;
+use adw::subclass::prelude::*;
+use gtk::prelude::*;
+use gtk::{gio, glib};
+
+use crate::models::Connection;
+use crate::views::{DinghyClient, DinghyWelcome};
 
 mod imp {
     use super::*;
 
-    #[derive(Debug, Default, gtk::CompositeTemplate)]
+    #[derive(Debug, Default, glib::Properties, gtk::CompositeTemplate)]
+    #[properties(wrapper_type = super::DinghyWindow)]
     #[template(resource = "/io/github/jpadgett314/Dinghy/views/window/window.ui")]
     pub struct DinghyWindow {
+        #[property(get, set, construct_only)]
+        pub settings: RefCell<Option<gio::Settings>>,
+        #[property(get, set, construct_only)]
+        pub connection: RefCell<Option<Connection>>,
         #[template_child]
-        pub bookmark_feed_widget: TemplateChild<BookmarkFeed>,
+        pub client: TemplateChild<DinghyClient>,
         #[template_child]
-        pub search_bar: TemplateChild<SearchBar>,
-        #[template_child]
-        pub search_entry: TemplateChild<SearchEntry>,
-        #[template_child]
-        pub search_toggle_button: TemplateChild<ToggleButton>,
-        #[template_child]
-        pub window_title_widget: TemplateChild<WindowTitle>,
+        pub stack: TemplateChild<gtk::Stack>,
     }
 
     #[glib::object_subclass]
@@ -50,6 +51,8 @@ mod imp {
         type ParentType = adw::ApplicationWindow;
 
         fn class_init(klass: &mut Self::Class) {
+            DinghyClient::ensure_type();
+            DinghyWelcome::ensure_type();
             klass.bind_template();
         }
 
@@ -58,7 +61,19 @@ mod imp {
         }
     }
 
-    impl ObjectImpl for DinghyWindow {}
+    #[glib::derived_properties]
+    impl ObjectImpl for DinghyWindow {
+        fn constructed(&self) {
+            self.parent_constructed();
+
+            let settings = self.obj().settings().expect("Window should have settings");
+            let url: String = settings.get("api-url");
+            let token: String = settings.get("api-token");
+            if !url.is_empty() && !token.is_empty() {
+                self.stack.set_visible_child_name("client");
+            }
+        }
+    }
     impl WidgetImpl for DinghyWindow {}
     impl WindowImpl for DinghyWindow {}
     impl ApplicationWindowImpl for DinghyWindow {}
@@ -73,9 +88,16 @@ glib::wrapper! {
 }
 
 impl DinghyWindow {
-    pub fn new<P: IsA<gtk::Application>>(application: &P) -> Self {
+    pub fn new<P: IsA<gtk::Application>>(
+        application: &P,
+        settings: &gio::Settings,
+        connection: &Connection,
+    ) -> Self {
         glib::Object::builder()
             .property("application", application)
+            .property("settings", settings)
+            .property("connection", connection)
             .build()
     }
 }
+
