@@ -21,6 +21,7 @@
               <object class="GtkButton">
                 <property name="label" translatable="yes">Connect Instance</property>
                 <property name="halign">center</property>
+                <signal name="clicked" handler="on_connect_instance_clicked" swapped="yes"/>
                 <style>
                   <class name="suggested-action"/>
                   <class name="pill"/>

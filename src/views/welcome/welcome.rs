@@ -1,5 +1,8 @@
+use adw::prelude::*;
 use adw::subclass::prelude::*;
 use gtk::glib;
+
+use crate::views::ConnectDialog;
 
 mod imp {
     use super::*;
@@ -16,6 +19,7 @@ mod imp {
 
         fn class_init(klass: &mut Self::Class) {
             klass.bind_template();
+            klass.bind_template_instance_callbacks();
         }
 
         fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
@@ -38,3 +42,10 @@ glib::wrapper! {
         @implements gtk::Accessible, gtk::Buildable, gtk::ConstraintTarget, gtk::Orientable;
 }
 
+#[gtk::template_callbacks]
+impl DinghyWelcome {
+    #[template_callback]
+    fn on_connect_instance_clicked(&self) {
+        ConnectDialog::new().present(Some(self));
+    }
+}

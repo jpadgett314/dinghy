@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <requires lib="gtk" version="4.0"/>
+  <requires lib="Adw" version="1.9"/>
+  <template class="ConnectDialog" parent="AdwDialog">
+    <property name="title" translatable="yes">Connect Instance</property>
+    <property name="follows-content-size">True</property>
+    <property name="child">
+      <object class="AdwToolbarView">
+        <child type="top">
+          <object class="AdwHeaderBar">
+            <property name="show-start-title-buttons">False</property>
+            <property name="show-end-title-buttons">False</property>
+            <child type="start">
+              <object class="GtkButton">
+                <property name="label" translatable="yes">Cancel</property>
+                <signal name="clicked" handler="on_cancel_clicked" swapped="yes"/>
+              </object>
+            </child>
+            <child type="end">
+              <object class="GtkButton">
+                <property name="label" translatable="yes">Connect</property>
+                <style>
+                  <class name="suggested-action"/>
+                </style>
+              </object>
+            </child>
+          </object>
+        </child>
+        <property name="content">
+          <object class="GtkScrolledWindow">
+            <property name="hscrollbar-policy">never</property>
+            <property name="propagate-natural-height">True</property>
+            <property name="child">
+              <object class="AdwClamp">
+                <property name="child">
+                  <object class="AdwPreferencesGroup">
+                    <property name="margin-top">24</property>
+                    <property name="margin-bottom">24</property>
+                    <property name="margin-start">24</property>
+                    <property name="margin-end">24</property>
+                    <property name="valign">start</property>
+                    <property name="title" translatable="yes">Credentials</property>
+                    <child>
+                      <object class="AdwEntryRow" id="api_url_row">
+                        <property name="title" translatable="yes">Instance URL</property>
+                        <property name="input-purpose">url</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="AdwPasswordEntryRow" id="api_token_row">
+                        <property name="title" translatable="yes">API Token</property>
+                      </object>
+                    </child>
+                  </object>
+                </property>
+              </object>
+            </property>
+          </object>
+        </property>
+      </object>
+    </property>
+  </template>
+</interface>
