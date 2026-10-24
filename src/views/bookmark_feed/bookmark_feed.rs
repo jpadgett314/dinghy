@@ -2,8 +2,9 @@ use std::sync::Mutex;
 
 use adw::prelude::*;
 use adw::subclass::prelude::*;
-use gtk::{glib, PositionType};
+use gtk::{gio, glib, PositionType};
 
+use crate::bookmark::Bookmark;
 use crate::models::BookmarkPagination;
 use crate::views::BookmarkCard;
 
@@ -55,6 +56,7 @@ mod imp {
 
     impl BookmarkFeed {
         fn setup_factory(&self) {
+            // CREATE
             self.factory.connect_setup(|_, item| {
                 let item = item
                     .downcast_ref::<gtk::ListItem>()
@@ -62,25 +64,28 @@ mod imp {
 
                 item.set_selectable(false);
                 item.set_activatable(true);
+                item.set_child(Some(&BookmarkCard::default()));
             });
 
+            // RE-USE
             self.factory.connect_bind(|_, item| {
                 let item = item
                     .downcast_ref::<gtk::ListItem>()
                     .expect("factory item should be a ListItem");
 
                 let card = item
-                    .item()
+                    .child()
                     .and_downcast::<BookmarkCard>()
-                    .expect("model item should be a BookmarkCard");
+                    .expect("child should be a BookmarkCard");
 
-                item.set_child(Some(&card));
-            });
+                let bookmark = item
+                    .item()
+                    .and_downcast::<glib::BoxedAnyObject>()
+                    .expect("model item should contain a Bookmark");
 
-            self.factory.connect_unbind(|_, item| {
-                item.downcast_ref::<gtk::ListItem>()
-                    .expect("factory item should be a ListItem")
-                    .set_child(None::<&gtk::Widget>);
+                let bookmark = bookmark.borrow::<Bookmark>();
+
+                card.set_data(&bookmark);
             });
         }
 
@@ -98,10 +103,18 @@ mod imp {
                     .lock()
                     .unwrap()
                     .item(position)
-                    .and_downcast::<BookmarkCard>();
+                    .and_downcast::<glib::BoxedAnyObject>();
 
-                if let Some(card) = content {
-                    card.open();
+                // TODO: create View-Model for Bookmark (when card needs non-DB state)
+                if let Some(content) = content {
+                    let bookmark = content.borrow::<Bookmark>();
+                    let parent = list.root().and_downcast::<gtk::Window>();
+                    let opener = gtk::UriLauncher::new(&bookmark.url);
+                    opener.launch(parent.as_ref(), None::<&gio::Cancellable>, |result| {
+                        if let Err(error) = result {
+                            eprintln!("Could not open bookmark: {error}");
+                        }
+                    });
                 }
             });
         }
@@ -152,4 +165,3 @@ impl BookmarkFeed {
         self.imp().set_model(model)
     }
 }
-

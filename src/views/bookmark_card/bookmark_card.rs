@@ -1,7 +1,8 @@
+use std::cell::RefCell;
+
 use adw::prelude::*;
 use adw::subclass::prelude::*;
-use gtk::{gio, glib};
-use std::cell::OnceCell;
+use gtk::{gdk, gio, glib};
 
 use crate::bookmark::Bookmark;
 use crate::icon_cache::fetch_icon;
@@ -12,7 +13,7 @@ mod imp {
     #[derive(Debug, Default, gtk::CompositeTemplate)]
     #[template(resource = "/io/github/jpadgett314/Dinghy/views/bookmark_card/bookmark_card.ui")]
     pub struct BookmarkCard {
-        pub bookmark: OnceCell<Bookmark>,
+        pub bookmark: RefCell<Bookmark>,
         #[template_child]
         pub url_label: gtk::TemplateChild<gtk::Label>,
         #[template_child]
@@ -51,14 +52,21 @@ glib::wrapper! {
 
 impl BookmarkCard {
     pub fn new(bookmark: &Bookmark) -> Self {
-        let row: Self = glib::Object::new();
+        let card: Self = glib::Object::new();
 
-        let _ = row.imp().bookmark.set(bookmark.clone());
-        row.imp().url_label.set_label(&bookmark.url);
-        row.imp().title_label.set_label(&bookmark.title);
-        row.imp().description_label.set_label(&bookmark.description);
+        card.set_data(bookmark);
+        card
+    }
 
-        row.set_tooltip_text(Some(&bookmark.url));
+    pub fn set_data(&self, bookmark: &Bookmark) {
+        let imp = self.imp();
+
+        imp.bookmark.replace(bookmark.clone());
+        imp.url_label.set_label(&bookmark.url);
+        imp.title_label.set_label(&bookmark.title);
+        imp.description_label.set_label(&bookmark.description);
+
+        self.set_tooltip_text(Some(&bookmark.url));
 
         let url = bookmark
             .favicon_url
@@ -66,12 +74,45 @@ impl BookmarkCard {
             .filter(|url| !url.trim().is_empty());
 
         if let Some(url) = url {
-            row.load_icon(url.clone());
+            self.load_icon(url.clone());
+        } else {
+            self.set_placeholder_icon();
         }
-
-        row
     }
 
+    pub fn set_placeholder_icon(&self) {
+        let icon = &self.imp().icon_image;
+
+        icon.set_icon_name(Some("user-bookmarks-symbolic"));
+        icon.add_css_class("dim-label");
+    }
+
+    pub fn set_icon(&self, tex: &gdk::Texture) {
+        let icon = &self.imp().icon_image;
+
+        icon.set_paintable(Some(tex));
+        icon.remove_css_class("dim-label");
+    }
+
+    pub fn load_icon(&self, url: String) {
+        let weak_card = self.downgrade();
+
+        glib::spawn_future_local(async move {
+            let icon = gio::spawn_blocking(move || fetch_icon(&url)).await;
+
+            let Some(card) = weak_card.upgrade() else {
+                return;
+            };
+
+            if let Ok(Some(icon)) = icon {
+                card.set_icon(&icon);
+            } else {
+                card.set_placeholder_icon();
+            }
+        });
+    }
+
+    /*
     pub fn open(&self) {
         let Some(bookmark) = &self.imp().bookmark.get() else {
             return;
@@ -90,21 +131,12 @@ impl BookmarkCard {
             }
         );
     }
+    */
+}
 
-    pub fn load_icon(&self, url: String) {
-        let weak_row = self.downgrade();
-
-        glib::spawn_future_local(async move {
-            let Ok(Some(texture)) = gio::spawn_blocking(move || fetch_icon(&url)).await else {
-                return;
-            };
-            let Some(row) = weak_row.upgrade() else {
-                 return;
-            };
-
-            row.imp().icon_image.set_paintable(Some(&texture));
-            row.imp().icon_image.remove_css_class("dim-label");
-        });
+impl Default for BookmarkCard {
+    fn default() -> Self {
+        glib::Object::builder().build()
     }
 }
 

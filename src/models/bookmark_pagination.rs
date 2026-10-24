@@ -6,7 +6,6 @@ use adw::subclass::prelude::*;
 use gtk::{gio, glib};
 
 use crate::bookmark_storage::BookmarkStorage;
-use crate::views::BookmarkCard;
 
 mod imp {
     use super::*;
@@ -14,7 +13,7 @@ mod imp {
     #[derive(Debug, Default)]
     pub struct BookmarkPaginationState {
         pub bookmarks: BookmarkStorage,
-        pub bookmark_cards: Vec<BookmarkCard>,
+        pub bookmark_list: Vec<glib::BoxedAnyObject>,
         pub query: String,
         pub query_page: i32,
         pub settings: OnceCell<gio::Settings>,
@@ -35,24 +34,24 @@ mod imp {
 
     impl ListModelImpl for BookmarkPagination {
         fn item_type(&self) -> glib::Type {
-            BookmarkCard::static_type()
+            glib::BoxedAnyObject::static_type()
         }
 
         fn n_items(&self) -> u32 {
             self.state
                 .lock()
                 .unwrap()
-                .bookmark_cards.len() as u32
+                .bookmark_list.len() as u32
         }
 
         fn item(&self, position: u32) -> Option<glib::Object> {
             self.state
                 .lock()
                 .unwrap()
-                .bookmark_cards
+                .bookmark_list
                 .get(position as usize)
                 .cloned()
-                .map(|card| card.upcast::<glib::Object>())
+                .map(|bookmark| bookmark.upcast::<glib::Object>())
         }
     }
 
@@ -73,7 +72,7 @@ mod imp {
                 let mut state = self.state.lock().unwrap();
 
                 state.query_page += 1;
-                state.bookmark_cards.len()
+                state.bookmark_list.len()
             };
 
             self.fetch_and_splice(position);
@@ -85,7 +84,7 @@ mod imp {
 
                 (
                     state.bookmarks.clone(),
-                    state.bookmark_cards.len(),
+                    state.bookmark_list.len(),
                     state.query.clone(),
                     state.query_page,
                     state
@@ -120,14 +119,11 @@ mod imp {
                 let taken = {
                     let mut state = store.imp().state.lock().unwrap();
 
-                    let cards = matches
-                        .iter()
-                        .map(BookmarkCard::new)
-                        .collect::<Vec<BookmarkCard>>();
+                    let bookmarks = matches.into_iter().map(glib::BoxedAnyObject::new);
 
                     state
-                        .bookmark_cards
-                        .splice(position..count, cards)
+                        .bookmark_list
+                        .splice(position..count, bookmarks)
                         .count()
                 };
 
@@ -172,4 +168,3 @@ impl Default for BookmarkPagination {
         glib::Object::builder().build()
     }
 }
-
