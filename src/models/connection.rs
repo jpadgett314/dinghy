@@ -53,6 +53,12 @@ impl Connection {
     }
 
     pub fn use_api<R>(&self, operation: impl FnOnce(&LinkDingClient) -> R) -> Option<R> {
+        // `LinkDingClient` is a blocking synchronous API!!
+        assert!(
+            !gtk::is_initialized_main_thread(),
+            "Connection::use_api() must not run on the GTK main thread."
+        );
+
         let api = self.imp().api.read().unwrap().clone()?;
 
         Some(operation(&api))

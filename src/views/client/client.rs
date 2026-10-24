@@ -139,10 +139,10 @@ impl DinghyClient {
                     .await;
 
             let count = match reply {
-                Err(_) => gettext("Not Available"),
-                Ok(None) => gettext("Not Available"),
+                Err(_) => gettext("Not available"),
+                Ok(None) => gettext("Not available"),
                 Ok(Some(data)) => match data.bookmark_count {
-                    0 => gettext("no bookmarks"),
+                    0 => gettext("No bookmarks"),
                     n => ngettext("{} bookmark", "{} bookmarks", n as u32).replace("{}", &n.to_string()),
                 }
             };
