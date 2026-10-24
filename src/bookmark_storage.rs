@@ -1,7 +1,7 @@
 use gtk::glib;
 use linkding::ListBookmarksArgs;
 
-use crate::bookmark_record::{to_create_req, to_internal, to_update_req, BookmarkRecord};
+use crate::bookmark::{to_create_req, to_internal, to_update_req, Bookmark};
 use crate::models::Connection;
 
 #[derive(Debug, Default, Clone, glib::Boxed)]
@@ -17,7 +17,7 @@ impl BookmarkStorage {
         }
     }
 
-    pub fn search(&self, q: String, p: i32, ps: i32) -> Vec<BookmarkRecord> {
+    pub fn search(&self, q: String, p: i32, ps: i32) -> Vec<Bookmark> {
         let req = ListBookmarksArgs {
             query: Some(q),
             limit: Some(ps),
@@ -37,7 +37,7 @@ impl BookmarkStorage {
         }
     }
 
-    pub fn create(&self, b: &BookmarkRecord) -> Option<BookmarkRecord> {
+    pub fn create(&self, b: &Bookmark) -> Option<Bookmark> {
         let req = to_create_req(b);
 
         let res = self.api.use_api(|api| api.create_bookmark(req));
@@ -52,7 +52,7 @@ impl BookmarkStorage {
         }
     }
 
-    pub fn update(&self, b: &BookmarkRecord) -> Option<BookmarkRecord> {
+    pub fn update(&self, b: &Bookmark) -> Option<Bookmark> {
         let req = to_update_req(b);
 
         let res = self.api.use_api(|api| api.update_bookmark(b.id, req));

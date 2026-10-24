@@ -19,7 +19,7 @@
  */
 
 mod application;
-mod bookmark_record;
+mod bookmark;
 mod bookmark_storage;
 mod config;
 mod icon_cache;

@@ -1,8 +1,8 @@
-use linkding::{Bookmark, CreateBookmarkBody, UpdateBookmarkBody};
+use linkding::{CreateBookmarkBody, UpdateBookmarkBody};
 
 // linkding::Bookmark fails to implement these traits...
 #[derive(Clone, Default, Debug, PartialEq)]
-pub struct BookmarkRecord {
+pub struct Bookmark {
     pub id: i32,
     pub url: String,
     pub title: String,
@@ -21,9 +21,9 @@ pub struct BookmarkRecord {
     pub website_description: Option<String>,
 }
 
-impl From<Bookmark> for BookmarkRecord {
-    fn from(b: Bookmark) -> BookmarkRecord {
-        BookmarkRecord {
+impl From<linkding::Bookmark> for Bookmark {
+    fn from(b: linkding::Bookmark) -> Bookmark {
+        Bookmark {
             id: b.id,
             url: b.url,
             title: b.title,
@@ -44,8 +44,8 @@ impl From<Bookmark> for BookmarkRecord {
     }
 }
 
-pub fn to_internal(external: &Bookmark) -> BookmarkRecord {
-    BookmarkRecord {
+pub fn to_internal(external: &linkding::Bookmark) -> Bookmark {
+    Bookmark {
         id: external.id.clone(),
         url: external.url.clone(),
         title: external.title.clone(),
@@ -66,8 +66,8 @@ pub fn to_internal(external: &Bookmark) -> BookmarkRecord {
 }
 
 #[allow(unused)]
-pub fn to_external(internal: &BookmarkRecord) -> Bookmark {
-    Bookmark {
+pub fn to_external(internal: &Bookmark) -> linkding::Bookmark {
+    linkding::Bookmark {
         id: internal.id.clone(),
         url: internal.url.clone(),
         title: internal.title.clone(),
@@ -88,7 +88,7 @@ pub fn to_external(internal: &BookmarkRecord) -> Bookmark {
 }
 
 // TODO: check empty strings
-pub fn to_create_req(internal: &BookmarkRecord) -> CreateBookmarkBody {
+pub fn to_create_req(internal: &Bookmark) -> CreateBookmarkBody {
     CreateBookmarkBody {
         url: internal.url.clone(),
         title: Some(internal.title.clone()),
@@ -108,7 +108,7 @@ pub fn to_create_req(internal: &BookmarkRecord) -> CreateBookmarkBody {
     }
 }
 
-pub fn to_update_req(internal: &BookmarkRecord) -> UpdateBookmarkBody {
+pub fn to_update_req(internal: &Bookmark) -> UpdateBookmarkBody {
     UpdateBookmarkBody {
         title: Some(internal.title.clone()),
         description: Some(internal.description.clone()),
@@ -126,4 +126,5 @@ pub fn to_update_req(internal: &BookmarkRecord) -> UpdateBookmarkBody {
         website_description: internal.website_description.clone(),
     }
 }
+
 

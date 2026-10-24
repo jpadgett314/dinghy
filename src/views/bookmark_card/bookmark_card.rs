@@ -3,7 +3,7 @@ use adw::subclass::prelude::*;
 use gtk::{gio, glib};
 use std::cell::OnceCell;
 
-use crate::bookmark_record::BookmarkRecord;
+use crate::bookmark::Bookmark;
 use crate::icon_cache::fetch_icon;
 
 mod imp {
@@ -12,7 +12,7 @@ mod imp {
     #[derive(Debug, Default, gtk::CompositeTemplate)]
     #[template(resource = "/io/github/jpadgett314/Dinghy/views/bookmark_card/bookmark_card.ui")]
     pub struct BookmarkCard {
-        pub bookmark: OnceCell<BookmarkRecord>,
+        pub bookmark: OnceCell<Bookmark>,
         #[template_child]
         pub url_label: gtk::TemplateChild<gtk::Label>,
         #[template_child]
@@ -50,7 +50,7 @@ glib::wrapper! {
 }
 
 impl BookmarkCard {
-    pub fn new(bookmark: &BookmarkRecord) -> Self {
+    pub fn new(bookmark: &Bookmark) -> Self {
         let row: Self = glib::Object::new();
 
         let _ = row.imp().bookmark.set(bookmark.clone());
