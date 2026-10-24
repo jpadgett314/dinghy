@@ -1,92 +1,83 @@
-use std::sync::Arc;
-
 use gtk::glib;
-use linkding::{LinkDingClient, ListBookmarksArgs};
+use linkding::ListBookmarksArgs;
 
-use crate::bookmark_record::{BookmarkRecord, to_create_req, to_internal, to_update_req};
+use crate::bookmark_record::{to_create_req, to_internal, to_update_req, BookmarkRecord};
+use crate::models::Connection;
 
-#[derive(Debug, Clone, glib::Boxed)]
+#[derive(Debug, Default, Clone, glib::Boxed)]
 #[boxed_type(name = "DinghyBookmarkStorage", nullable)]
 pub struct BookmarkStorage {
-    pub api: Arc<LinkDingClient>,
+    api: Connection,
 }
 
 impl BookmarkStorage {
-    pub fn new(api: LinkDingClient) -> Self {
+    pub fn new(connection: &Connection) -> Self {
         Self {
-            api: Arc::new(api),
+            api: connection.clone(),
         }
     }
 
-    pub fn search(&self, q: String, p: i32, s: i32) -> Vec<BookmarkRecord> {
+    pub fn search(&self, q: String, p: i32, ps: i32) -> Vec<BookmarkRecord> {
         let req = ListBookmarksArgs {
             query: Some(q),
-            limit: Some(s),
-            offset: Some(s * p),
+            limit: Some(ps),
+            offset: Some(ps * p),
             modified_since: None,
         };
 
-        let res = self.api.list_bookmarks(req);
+        let res = self.api.use_api(|api| api.list_bookmarks(req));
 
         match res {
-            Ok(data) => {
-                data.results
-                    .iter()
-                    .map(to_internal)
-                    .collect()
-            }
-            Err(e) => {
+            Some(Ok(data)) => data.results.iter().map(to_internal).collect(),
+            Some(Err(e)) => {
                 eprintln!("API error: {e}");
                 vec![]
             }
+            None => vec![]
         }
     }
 
-    pub fn create(&self, b: &BookmarkRecord) -> BookmarkRecord {
+    pub fn create(&self, b: &BookmarkRecord) -> Option<BookmarkRecord> {
         let req = to_create_req(b);
 
-        let res = self.api.create_bookmark(req);
+        let res = self.api.use_api(|api| api.create_bookmark(req));
 
         match res {
-            Ok(data) => to_internal(&data),
-            Err(e) => {
+            Some(Ok(data)) => Some(to_internal(&data)),
+            Some(Err(e)) => {
                 eprintln!("API error: {e}");
-                BookmarkRecord::default()
-            }
+                None
+            },
+            None => None
         }
     }
 
-    pub fn update(&self, b: &BookmarkRecord) -> BookmarkRecord {
+    pub fn update(&self, b: &BookmarkRecord) -> Option<BookmarkRecord> {
         let req = to_update_req(b);
 
-        let res = self.api.update_bookmark(b.id, req);
+        let res = self.api.use_api(|api| api.update_bookmark(b.id, req));
 
         match res {
-            Ok(data) => to_internal(&data),
-            Err(e) => {
+            Some(Ok(data)) => Some(to_internal(&data)),
+            Some(Err(e)) => {
                 eprintln!("API error: {e}");
-                BookmarkRecord::default()
-            }
+                None
+            },
+            None => None
         }
     }
 
     pub fn delete(&self, id: i32) -> bool {
-        let res = self.api.delete_bookmark(id);
+        let res = self.api.use_api(|api| api.delete_bookmark(id));
 
         match res {
-            Ok(data) => data,
-            Err(e) => {
+            Some(Ok(data)) => data,
+            Some(Err(e)) => {
                 eprintln!("API error: {e}");
                 false
-            }
+            },
+            None => false
         }
     }
 }
 
-impl Default for BookmarkStorage {
-    fn default() -> Self {
-        Self {
-            api: Arc::new(LinkDingClient::new("localhost:9090", "")),
-        }
-    }
-}

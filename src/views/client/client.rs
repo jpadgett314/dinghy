@@ -1,12 +1,12 @@
 use std::cell::RefCell;
 
 use adw::subclass::prelude::*;
-use gettextrs::gettext;
+use gettextrs::{gettext, ngettext};
 use gtk::prelude::*;
 use gtk::{gio, glib, SearchBar, SearchEntry, ToggleButton};
 
 use crate::bookmark_storage::BookmarkStorage;
-use crate::models::connection::{Connection, ConnectionStatus};
+use crate::models::Connection;
 use crate::models::BookmarkPagination;
 use crate::views::BookmarkFeed;
 
@@ -105,38 +105,50 @@ impl DinghyClient {
             return;
         };
 
-        let storage = BookmarkStorage::new(connection.api());
+        let storage = BookmarkStorage::new(&connection);
         let pagination = BookmarkPagination::new(storage.clone(), settings);
         self.imp().bookmark_storage.replace(Some(storage));
         self.imp().bookmark_pagination.replace(Some(pagination.clone()));
         self.imp().bookmark_feed_widget.set_model(pagination);
-        self.notify("bookmark-storage");
-        self.notify("bookmark-pagination");
+
+        self.refresh();
     }
 
-    fn refresh_bookmarks(&self) {
+    pub fn refresh(&self) {
+        self.refresh_bookmarks();
+        self.refresh_title();
+    }
+
+    pub fn refresh_bookmarks(&self) {
         if let Some(pagination) = self.bookmark_pagination() {
             pagination.fetch_query(self.imp().search_entry.text().to_string());
         }
     }
 
-    fn refresh_title(&self) {
-        let (Some(connection), Some(settings)) = (self.connection(), self.settings()) else {
+    pub fn refresh_title(&self) {
+        let (Some(settings), Some(connection)) = (self.settings(), self.connection()) else {
             return;
         };
+
         let title: String = settings.get("api-url");
-        self.imp().window_title_widget.set_title(&title);
-        let subtitle = match connection.status() {
-            ConnectionStatus::Disconnected => gettext("disconnected"),
-            ConnectionStatus::Connected => match connection.stats() {
-                None => gettext("disconnected"),
-                Some(data) => match data.bookmark_count {
+        let title_widget = self.imp().window_title_widget.get();
+
+        glib::spawn_future_local(async move {
+            let reply =
+                gio::spawn_blocking(move || connection.stats())
+                    .await;
+
+            let count = match reply {
+                Err(_) => gettext("Not Available"),
+                Ok(None) => gettext("Not Available"),
+                Ok(Some(data)) => match data.bookmark_count {
                     0 => gettext("no bookmarks"),
-                    1 => gettext("1 bookmark"),
-                    n => gettext("{} bookmarks").replace("{}", &n.to_string()),
-                },
-            },
-        };
-        self.imp().window_title_widget.set_subtitle(&subtitle);
+                    n => ngettext("{} bookmark", "{} bookmarks", n as u32).replace("{}", &n.to_string()),
+                }
+            };
+
+            title_widget.set_title(&title);
+            title_widget.set_subtitle(&count);
+        });
     }
 }

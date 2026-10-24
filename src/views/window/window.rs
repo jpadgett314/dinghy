@@ -34,9 +34,9 @@ mod imp {
     #[properties(wrapper_type = super::DinghyWindow)]
     #[template(resource = "/io/github/jpadgett314/Dinghy/views/window/window.ui")]
     pub struct DinghyWindow {
-        #[property(get, set, construct_only)]
+        #[property(get, set, construct)]
         pub settings: RefCell<Option<gio::Settings>>,
-        #[property(get, set, construct_only)]
+        #[property(get, set, construct)]
         pub connection: RefCell<Option<Connection>>,
         #[template_child]
         pub client: TemplateChild<DinghyClient>,
@@ -65,12 +65,11 @@ mod imp {
     impl ObjectImpl for DinghyWindow {
         fn constructed(&self) {
             self.parent_constructed();
-
-            let settings = self.obj().settings().expect("Window should have settings");
-            let url: String = settings.get("api-url");
-            let token: String = settings.get("api-token");
-            if !url.is_empty() && !token.is_empty() {
-                self.stack.set_visible_child_name("client");
+            let obj = self.obj();
+            if obj.settings().is_some_and(|p| p.get("onboarded")) {
+                obj.show_client();
+            } else {
+                obj.show_welcome();
             }
         }
     }
@@ -98,6 +97,22 @@ impl DinghyWindow {
             .property("settings", settings)
             .property("connection", connection)
             .build()
+    }
+
+    pub fn show_client(&self) {
+        self.imp()
+            .stack
+            .set_visible_child_name("client");
+
+        self.imp()
+            .client
+            .refresh();
+    }
+
+    pub fn show_welcome(&self) {
+        self.imp()
+            .stack
+            .set_visible_child_name("welcome");
     }
 }
 

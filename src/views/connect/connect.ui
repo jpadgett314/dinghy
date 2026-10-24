@@ -20,6 +20,7 @@
             <child type="end">
               <object class="GtkButton">
                 <property name="label" translatable="yes">Connect</property>
+                <signal name="clicked" handler="on_connect_clicked" swapped="yes"/>
                 <style>
                   <class name="suggested-action"/>
                 </style>

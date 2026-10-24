@@ -1,15 +1,24 @@
+use std::cell::RefCell;
+
 use adw::prelude::*;
 use adw::subclass::prelude::*;
-use gtk::glib;
+use gtk::{gio, glib};
 
+use crate::models::Connection;
 use crate::views::ConnectDialog;
 
 mod imp {
     use super::*;
 
-    #[derive(Debug, Default, gtk::CompositeTemplate)]
+    #[derive(Debug, Default, glib::Properties, gtk::CompositeTemplate)]
+    #[properties(wrapper_type = super::DinghyWelcome)]
     #[template(resource = "/io/github/jpadgett314/Dinghy/views/welcome/welcome.ui")]
-    pub struct DinghyWelcome {}
+    pub struct DinghyWelcome {
+        #[property(get, set, construct)]
+        pub connection: RefCell<Option<Connection>>,
+        #[property(get, set, construct)]
+        pub settings: RefCell<Option<gio::Settings>>,
+    }
 
     #[glib::object_subclass]
     impl ObjectSubclass for DinghyWelcome {
@@ -27,6 +36,7 @@ mod imp {
         }
     }
 
+    #[glib::derived_properties]
     impl ObjectImpl for DinghyWelcome {
         fn dispose(&self) {
             self.dispose_template();
@@ -44,8 +54,19 @@ glib::wrapper! {
 
 #[gtk::template_callbacks]
 impl DinghyWelcome {
+    pub fn new(connection: &Connection, settings: &gio::Settings) -> Self {
+        glib::Object::builder()
+            .property("connection", connection)
+            .property("settings", settings)
+            .build()
+    }
+
     #[template_callback]
     fn on_connect_instance_clicked(&self) {
-        ConnectDialog::new().present(Some(self));
+        let Some(connection) = self.connection() else { return };
+        let Some(settings) = self.settings() else {return};
+
+        ConnectDialog::new(&connection, &settings).present(Some(self));
     }
 }
+

@@ -1,6 +1,7 @@
-use std::cell::OnceCell;
+use std::sync::{Arc, RwLock};
 
-use gtk::{glib, subclass::prelude::*};
+use gtk::glib;
+use gtk::subclass::prelude::*;
 use linkding::{LinkDingClient, ListBookmarksArgs};
 
 #[derive(Debug, Default, Copy, Clone)]
@@ -17,9 +18,10 @@ pub enum ConnectionStatus {
 mod imp {
     use super::*;
 
-    #[derive(Debug, Default)]
+    #[derive(Debug, Default, glib::Properties)]
+    #[properties(wrapper_type = super::Connection)]
     pub struct Connection {
-        pub api: OnceCell<LinkDingClient>,
+        pub api: Arc<RwLock<Option<LinkDingClient>>>,
     }
 
     #[glib::object_subclass]
@@ -29,6 +31,7 @@ mod imp {
         type ParentType = glib::Object;
     }
 
+    #[glib::derived_properties]
     impl ObjectImpl for Connection {}
 }
 
@@ -37,18 +40,22 @@ glib::wrapper! {
 }
 
 impl Connection {
-    pub fn new(api: LinkDingClient) -> Self {
+    pub fn new(url: &str, token: &str) -> Self {
         let object: Self = glib::Object::new();
-        object.imp().api.set(api).unwrap();
+        object.set_api(url, token);
         object
     }
 
-    pub fn api(&self) -> LinkDingClient {
-        self.imp()
-            .api
-            .get()
-            .expect("Connection should have an API client")
-            .clone()
+    pub fn set_api(&self, url: &str, token: &str) {
+        let api = LinkDingClient::new(url, token);
+
+        *self.imp().api.write().unwrap() = Some(api);
+    }
+
+    pub fn use_api<R>(&self, operation: impl FnOnce(&LinkDingClient) -> R) -> Option<R> {
+        let api = self.imp().api.read().unwrap().clone()?;
+
+        Some(operation(&api))
     }
 
     pub fn status(&self) -> ConnectionStatus {
@@ -59,11 +66,11 @@ impl Connection {
             modified_since: None,
         };
 
-        let res = self.api().list_bookmarks(req);
+        let res = self.use_api(|api| api.list_bookmarks(req));
 
         match res {
-            Ok(_) => ConnectionStatus::Connected,
-            Err(_) => ConnectionStatus::Disconnected,
+            Some(Ok(_)) => ConnectionStatus::Connected,
+            _ => ConnectionStatus::Disconnected,
         }
     }
 
@@ -75,7 +82,7 @@ impl Connection {
             modified_since: None,
         };
 
-        let res = self.api().list_bookmarks(req);
+        let res = self.use_api(|api| api.list_bookmarks(req))?;
 
         match res {
             Ok(data) => {
@@ -92,7 +99,6 @@ impl Connection {
 
 impl Default for Connection {
     fn default() -> Self {
-        Self::new(LinkDingClient::new("localhost:9090", ""))
+        glib::Object::new()
     }
 }
-

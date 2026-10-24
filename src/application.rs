@@ -22,7 +22,6 @@ use adw::prelude::*;
 use adw::subclass::prelude::*;
 use gettextrs::gettext;
 use gtk::{gio, glib};
-use linkding::LinkDingClient;
 
 use crate::config::VERSION;
 use crate::models::Connection;
@@ -44,8 +43,7 @@ mod imp {
             let url: String = settings.get("api-url");
             let tok: String = settings.get("api-token");
 
-            let api = LinkDingClient::new(&url, &tok);
-            let connection = Connection::new(api);
+            let connection = Connection::new(&url, &tok);
 
             Self {
                 connection,
@@ -128,7 +126,13 @@ impl DinghyApplication {
         let preferences_action = gio::ActionEntry::builder("preferences")
             .activate(move |app: &Self, _, _| app.show_preferences())
             .build();
-        self.add_action_entries([quit_action, about_action, preferences_action]);
+        let onboard_complete_action = gio::ActionEntry::builder("onboard-complete")
+            .activate(move |app: &Self, _, _| app.show_client())
+            .build();
+        let onboard_action = gio::ActionEntry::builder("onboard")
+            .activate(move |app: &Self, _, _| app.show_welcome())
+            .build();
+        self.add_action_entries([quit_action, about_action, preferences_action, onboard_complete_action, onboard_action]);
     }
 
     fn show_about(&self) {
@@ -155,5 +159,17 @@ impl DinghyApplication {
 
         dialog.bind_settings(&self.imp().settings);
         dialog.present(Some(&window));
+    }
+
+    pub fn show_client(&self) {
+        let window = self.dinghy_window();
+
+        window.show_client();
+    }
+
+    pub fn show_welcome(&self) {
+        let window = self.dinghy_window();
+
+        window.show_welcome();
     }
 }

@@ -88,7 +88,8 @@ mod imp {
                     state.bookmark_cards.len(),
                     state.query.clone(),
                     state.query_page,
-                    state.settings
+                    state
+                        .settings
                         .get()
                         .map(|s| s.get::<u32>("max-bookmarks-per-query") as i32)
                         .unwrap_or(1000),
@@ -99,7 +100,9 @@ mod imp {
             let store = self.obj().clone();
 
             glib::spawn_future_local(async move {
-                let reply = gio::spawn_blocking(move || { bookmarks.search(query, page, page_size) }).await;
+                let reply =
+                    gio::spawn_blocking(move || bookmarks.search(query, page, page_size))
+                        .await;
 
                 let Ok(matches) = reply else {
                     return
