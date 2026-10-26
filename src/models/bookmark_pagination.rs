@@ -6,6 +6,7 @@ use adw::subclass::prelude::*;
 use gtk::{gio, glib};
 
 use crate::bookmark_storage::BookmarkStorage;
+use crate::models::BookmarkCardModel;
 
 mod imp {
     use super::*;
@@ -13,7 +14,7 @@ mod imp {
     #[derive(Debug, Default)]
     pub struct BookmarkPaginationState {
         pub bookmarks: BookmarkStorage,
-        pub bookmark_list: Vec<glib::BoxedAnyObject>,
+        pub bookmark_list: Vec<BookmarkCardModel>,
         pub query: String,
         pub query_page: i32,
         pub settings: OnceCell<gio::Settings>,
@@ -34,7 +35,7 @@ mod imp {
 
     impl ListModelImpl for BookmarkPagination {
         fn item_type(&self) -> glib::Type {
-            glib::BoxedAnyObject::static_type()
+            BookmarkCardModel::static_type()
         }
 
         fn n_items(&self) -> u32 {
@@ -91,7 +92,7 @@ mod imp {
                         .settings
                         .get()
                         .map(|s| s.get::<u32>("max-bookmarks-per-query") as i32)
-                        .unwrap_or(1000),
+                        .unwrap_or(100),
                 )
             };
 
@@ -103,23 +104,17 @@ mod imp {
                     gio::spawn_blocking(move || bookmarks.search(query, page, page_size))
                         .await;
 
-                let Ok(matches) = reply else {
-                    return
-                };
+                let Ok(matches) = reply else { return };
 
-                if matches.len() < 1 {
-                    return;
-                }
+                if matches.len() < 1 { return }
 
-                if count < position as usize {
-                    return;
-                }
+                if count < position as usize { return }
 
                 let added = matches.len();
                 let taken = {
                     let mut state = store.imp().state.lock().unwrap();
 
-                    let bookmarks = matches.into_iter().map(glib::BoxedAnyObject::new);
+                    let bookmarks = matches.iter().map(BookmarkCardModel::new);
 
                     state
                         .bookmark_list

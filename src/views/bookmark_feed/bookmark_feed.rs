@@ -2,10 +2,9 @@ use std::sync::Mutex;
 
 use adw::prelude::*;
 use adw::subclass::prelude::*;
-use gtk::{gio, glib, PositionType};
+use gtk::{glib};
 
-use crate::bookmark::Bookmark;
-use crate::models::BookmarkPagination;
+use crate::models::{BookmarkCardModel, BookmarkPagination};
 use crate::views::BookmarkCard;
 
 mod imp {
@@ -33,6 +32,7 @@ mod imp {
 
         fn class_init(klass: &mut Self::Class) {
             klass.bind_template();
+            klass.bind_template_instance_callbacks();
         }
 
         fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
@@ -46,95 +46,12 @@ mod imp {
 
             let model = BookmarkPagination::default();
 
-            self.setup_factory();
-            self.setup_infinite_scroll();
-            self.setup_click_activation();
             self.selection.set_model(Some(&model));
             self.set_model(model);
         }
     }
 
     impl BookmarkFeed {
-        fn setup_factory(&self) {
-            // CREATE
-            self.factory.connect_setup(|_, item| {
-                let item = item
-                    .downcast_ref::<gtk::ListItem>()
-                    .expect("factory item should be a ListItem");
-
-                item.set_selectable(false);
-                item.set_activatable(true);
-                item.set_child(Some(&BookmarkCard::default()));
-            });
-
-            // RE-USE
-            self.factory.connect_bind(|_, item| {
-                let item = item
-                    .downcast_ref::<gtk::ListItem>()
-                    .expect("factory item should be a ListItem");
-
-                let card = item
-                    .child()
-                    .and_downcast::<BookmarkCard>()
-                    .expect("child should be a BookmarkCard");
-
-                let bookmark = item
-                    .item()
-                    .and_downcast::<glib::BoxedAnyObject>()
-                    .expect("model item should contain a Bookmark");
-
-                let bookmark = bookmark.borrow::<Bookmark>();
-
-                card.set_data(&bookmark);
-            });
-        }
-
-        pub fn setup_click_activation(&self) {
-            let weak_list = self.obj().downgrade();
-
-            self.list.connect_activate(move |_, position| {
-                let Some(list) = weak_list.upgrade() else {
-                    return
-                };
-
-                let content = list
-                    .imp()
-                    .model
-                    .lock()
-                    .unwrap()
-                    .item(position)
-                    .and_downcast::<glib::BoxedAnyObject>();
-
-                // TODO: create View-Model for Bookmark (when card needs non-DB state)
-                if let Some(content) = content {
-                    let bookmark = content.borrow::<Bookmark>();
-                    let parent = list.root().and_downcast::<gtk::Window>();
-                    let opener = gtk::UriLauncher::new(&bookmark.url);
-                    opener.launch(parent.as_ref(), None::<&gio::Cancellable>, |result| {
-                        if let Err(error) = result {
-                            eprintln!("Could not open bookmark: {error}");
-                        }
-                    });
-                }
-            });
-        }
-
-        pub fn setup_infinite_scroll(&self) {
-            let weak_list = self.obj().downgrade();
-
-            self.scroll_window.connect_edge_reached(move |_, pos| {
-                if pos != PositionType::Bottom {
-                    return
-                }
-
-                let Some(list) = weak_list.upgrade() else {
-                    return
-                };
-
-                list.imp().model.lock().unwrap().fetch_more();
-            });
-        }
-
         pub fn get_model(&self) -> BookmarkPagination {
             self.model.lock().unwrap().clone()
         }
@@ -156,7 +73,52 @@ glib::wrapper! {
         @implements gtk::Accessible, gtk::Buildable, gtk::ConstraintTarget, gtk::Orientable;
 }
 
+#[gtk::template_callbacks]
 impl BookmarkFeed {
+    #[template_callback]
+    fn on_edge_reached(&self, edge: gtk::PositionType) {
+        if edge == gtk::PositionType::Bottom {
+            self.imp()
+                .model
+                .lock()
+                .unwrap()
+                .fetch_more();
+        }
+    }
+
+    #[template_callback]
+    fn on_setup(&self, item: &glib::Object) {
+        let item = item.downcast_ref::<gtk::ListItem>().unwrap();
+        item.set_selectable(false);
+        item.set_activatable(true);
+        item.set_child(Some(&BookmarkCard::default()));
+    }
+
+    #[template_callback]
+    fn on_bind(&self, item: &glib::Object) {
+        let item = item.downcast_ref::<gtk::ListItem>().unwrap();
+        let card = item.child().and_downcast::<BookmarkCard>().unwrap();
+        card.set_model(item.item().and_downcast::<BookmarkCardModel>().as_ref());
+    }
+
+    #[template_callback]
+    fn on_unbind(&self, item: &glib::Object) {
+        let item = item.downcast_ref::<gtk::ListItem>().unwrap();
+        let card = item.child().and_downcast::<BookmarkCard>().unwrap();
+        card.set_model(None::<&BookmarkCardModel>);
+    }
+
+    #[template_callback]
+    fn on_activate(&self, position: u32) {
+        if let Some(bookmark) = self
+            .get_model()
+            .item(position)
+            .and_downcast::<BookmarkCardModel>()
+        {
+            bookmark.open(self.root().and_downcast::<gtk::Window>().as_ref());
+        }
+    }
+
     pub fn get_model(&self) -> BookmarkPagination {
         self.imp().get_model()
     }

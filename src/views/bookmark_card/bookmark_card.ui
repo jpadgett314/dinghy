@@ -4,6 +4,16 @@
   <template class="BookmarkCard" parent="GtkBox">
     <property name="orientation">horizontal</property>
     <property name="spacing">16</property>
+    <binding name="tooltip-text">
+      <lookup name="url" type="BookmarkCardModel">
+        <lookup name="model">BookmarkCard</lookup>
+      </lookup>
+    </binding>
+    <binding name="favicon">
+      <lookup name="favicon-paintable" type="BookmarkCardModel">
+        <lookup name="model">BookmarkCard</lookup>
+      </lookup>
+    </binding>
     <style>
       <class name="card"/>
       <class name="activatable"/>
@@ -27,6 +37,16 @@
         <property name="hexpand">True</property>
         <child>
           <object class="GtkLabel" id="title_label">
+            <binding name="label">
+              <lookup name="title" type="BookmarkCardModel">
+                <lookup name="model">BookmarkCard</lookup>
+              </lookup>
+            </binding>
+            <binding name="visible">
+              <closure type="gboolean" function="has_text">
+                <lookup name="label">title_label</lookup>
+              </closure>
+            </binding>
             <property name="xalign">0</property>
             <property name="wrap">True</property>
             <property name="wrap-mode">word-char</property>
@@ -39,6 +59,16 @@
         </child>
         <child>
           <object class="GtkLabel" id="description_label">
+            <binding name="label">
+              <lookup name="description" type="BookmarkCardModel">
+                <lookup name="model">BookmarkCard</lookup>
+              </lookup>
+            </binding>
+            <binding name="visible">
+              <closure type="gboolean" function="has_text">
+                <lookup name="label">description_label</lookup>
+              </closure>
+            </binding>
             <property name="xalign">0</property>
             <property name="wrap">True</property>
             <property name="wrap-mode">word-char</property>
@@ -51,6 +81,16 @@
         </child>
         <child>
           <object class="GtkLabel" id="url_label">
+            <binding name="label">
+              <lookup name="url" type="BookmarkCardModel">
+                <lookup name="model">BookmarkCard</lookup>
+              </lookup>
+            </binding>
+            <binding name="visible">
+              <closure type="gboolean" function="has_text">
+                <lookup name="label">url_label</lookup>
+              </closure>
+            </binding>
             <property name="xalign">0</property>
             <property name="ellipsize">middle</property>
             <style>
