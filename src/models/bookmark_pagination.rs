@@ -65,27 +65,25 @@ mod imp {
                 state.query_page = 0;
             };
 
-            self.fetch_and_splice(0);
+            self.fetch_and_splice(true);
         }
 
         pub fn fetch_more(&self) {
-            let position = {
+            {
                 let mut state = self.state.lock().unwrap();
 
                 state.query_page += 1;
-                state.bookmark_list.len()
             };
 
-            self.fetch_and_splice(position);
+            self.fetch_and_splice(false);
         }
 
-        pub fn fetch_and_splice(&self, position: usize) {
-            let (bookmarks, count, query, page, page_size) = {
+        pub fn fetch_and_splice(&self, replace: bool) {
+            let (bookmarks, query, page, page_size) = {
                 let state = self.state.lock().unwrap();
 
                 (
                     state.bookmarks.clone(),
-                    state.bookmark_list.len(),
                     state.query.clone(),
                     state.query_page,
                     state
@@ -96,8 +94,8 @@ mod imp {
                 )
             };
 
-            // A copy for the callback, to avoid premature destruction
-            let store = self.obj().clone();
+            // A copy for the closure, to avoid premature destruction
+            let model = self.obj().clone();
 
             glib::spawn_future_local(async move {
                 let reply =
@@ -108,21 +106,20 @@ mod imp {
 
                 if matches.len() < 1 { return }
 
-                if count < position as usize { return }
+                let bookmarks = matches.iter().map(BookmarkCardModel::new);
 
-                let added = matches.len();
-                let taken = {
-                    let mut state = store.imp().state.lock().unwrap();
+                let (index, taken, added) = {
+                    let mut state = model.imp().state.lock().unwrap();
 
-                    let bookmarks = matches.iter().map(BookmarkCardModel::new);
+                    let added = bookmarks.len();
+                    let count = state.bookmark_list.len();
+                    let index = if replace { 0 } else { state.bookmark_list.len() };
+                    let taken = state.bookmark_list.splice(index..count, bookmarks).count();
 
-                    state
-                        .bookmark_list
-                        .splice(position..count, bookmarks)
-                        .count()
+                    (index, taken, added)
                 };
 
-                store.items_changed(position as u32, taken as u32, added as u32);
+                model.items_changed(index as u32, taken as u32, added as u32);
             });
         }
     }
