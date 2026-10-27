@@ -27,8 +27,8 @@ mod imp {
 
     impl BookmarkCardModel {
         fn set_favicon_url(&self, url: String) {
-            self.obj().load_icon(&url);
-            self.favicon_url.replace(Some(url));
+            self.favicon_url.replace(Some(url.clone()));
+            self.obj().load_icon(url);
         }
     }
 
@@ -64,13 +64,11 @@ impl BookmarkCardModel {
         });
     }
 
-    pub fn load_icon(&self, favicon_url: &String) {
-        let favicon_url_outer = favicon_url.clone();
+    pub fn load_icon(&self, url: String) {
         glib::spawn_future_local(
             glib::clone!(
                 #[weak(rename_to = model)] self,
                 async move {
-                    let url = favicon_url_outer.clone();
                     let res = gio::spawn_blocking(move || fetch_icon(&url)).await;
                     if let Ok(icon) = res {
                         model.set_favicon_paintable(icon);
