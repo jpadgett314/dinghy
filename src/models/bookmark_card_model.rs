@@ -14,21 +14,25 @@ mod imp {
     #[properties(wrapper_type = super::BookmarkCardModel)]
     pub struct BookmarkCardModel {
         #[property(get, set)]
-        pub url: RefCell<String>,
+        pub description: RefCell<String>,
+        #[property(get, set, nullable)]
+        pub favicon_paintable: RefCell<Option<gdk::Paintable>>,
+        #[property(get, set = Self::set_favicon_url, nullable)]
+        pub favicon_url: RefCell<Option<String>>,
+        #[property(get, set)]
+        pub tag_names: RefCell<glib::StrV>,
         #[property(get, set)]
         pub title: RefCell<String>,
         #[property(get, set)]
-        pub description: RefCell<String>,
-        #[property(get, set = Self::set_favicon_url, nullable)]
-        pub favicon_url: RefCell<Option<String>>,
-        #[property(get, set, nullable)]
-        pub favicon_paintable: RefCell<Option<gdk::Paintable>>,
+        pub url: RefCell<String>,
     }
 
     impl BookmarkCardModel {
-        fn set_favicon_url(&self, url: String) {
-            self.favicon_url.replace(Some(url.clone()));
-            self.obj().load_icon(url);
+        fn set_favicon_url(&self, url: Option<String>) {
+            self.favicon_url.replace(url.clone());
+            if let Some(url) = url {
+                self.obj().load_icon(url)
+            };
         }
     }
 
@@ -52,6 +56,7 @@ impl BookmarkCardModel {
             .property("url", &bookmark.url)
             .property("title", &bookmark.title)
             .property("description", &bookmark.description)
+            .property("tag-names", glib::StrV::from(bookmark.tag_names.clone()))
             .property("favicon-url", &bookmark.favicon_url)
             .build()
     }
