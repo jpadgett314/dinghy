@@ -1,7 +1,8 @@
 use std::sync::{Arc, RwLock};
 
-use gtk::glib;
-use gtk::subclass::prelude::*;
+use adw::prelude::*;
+use adw::subclass::prelude::*;
+use gtk::{gio, glib};
 use linkding::{LinkDingClient, ListBookmarksArgs};
 
 #[derive(Debug, Default, Copy, Clone)]
@@ -22,6 +23,40 @@ mod imp {
     #[properties(wrapper_type = super::Connection)]
     pub struct Connection {
         pub api: Arc<RwLock<Option<LinkDingClient>>>,
+        #[property(get, set = Self::set_url, nullable)]
+        pub url: Arc<RwLock<Option<String>>>,
+        #[property(get, set = Self::set_token, nullable)]
+        pub token: Arc<RwLock<Option<String>>>,
+    }
+
+    impl Connection {
+        pub fn set_api(&self, url: &str, token: &str) {
+            *self.api.write().unwrap() = Some(LinkDingClient::new(url, token));
+        }
+
+        pub fn set_url(&self, value: Option<String>) {
+            if let Some(token) = self.token.read().unwrap().as_ref() {
+                if let Some(url) = value.as_ref() {
+                    self.set_api(url, token);
+                }
+            }
+
+            *self.url.write().unwrap() = value.clone();
+        }
+
+        pub fn set_token(&self, value: Option<String>) {
+            if let Some(url) = self.url.read().unwrap().as_ref() {
+                if let Some(token) = value.as_ref() {
+                    self.set_api(url, token);
+                }
+            }
+
+            *self.token.write().unwrap() = value.clone();
+        }
+    }
+
+    impl Connection {
+
     }
 
     #[glib::object_subclass]
@@ -40,16 +75,30 @@ glib::wrapper! {
 }
 
 impl Connection {
-    pub fn new(url: &str, token: &str) -> Self {
-        let object: Self = glib::Object::new();
-        object.set_api(url, token);
+    pub fn new(url: &String, token: &String) -> Self {
+        glib::Object::builder()
+            .property("url", url)
+            .property("token", token)
+            .build()
+    }
+
+    pub fn from(settings: &gio::Settings) -> Self {
+        let object: Self = glib::Object::builder()
+            .property("url", settings.get::<String>("api-url"))
+            .property("token", settings.get::<String>("api-token"))
+            .build();
+
+        object.bind(settings);
         object
     }
 
-    pub fn set_api(&self, url: &str, token: &str) {
-        let api = LinkDingClient::new(url, token);
-
-        *self.imp().api.write().unwrap() = Some(api);
+    pub fn bind(&self, settings: &gio::Settings) {
+        settings
+            .bind("api-url", self, "url")
+            .build();
+        settings
+            .bind("api-token", self, "token")
+            .build();
     }
 
     pub fn use_api<R>(&self, operation: impl FnOnce(&LinkDingClient) -> R) -> Option<R> {

@@ -1,6 +1,5 @@
 use linkding::{CreateBookmarkBody, UpdateBookmarkBody};
 
-// linkding::Bookmark fails to implement these traits...
 #[derive(Clone, Default, Debug, PartialEq)]
 pub struct Bookmark {
     pub id: i32,

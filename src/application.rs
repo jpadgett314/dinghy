@@ -31,24 +31,21 @@ use crate::views::PreferencesDialog;
 mod imp {
     use super::*;
 
-    #[derive(Debug)]
+    #[derive(Debug, glib::Properties)]
+    #[properties(wrapper_type = super::DinghyApplication)]
     pub struct DinghyApplication {
+        #[property(get)]
         pub connection: Connection,
+        #[property(get)]
         pub settings: gio::Settings,
     }
 
     impl Default for DinghyApplication {
         fn default() -> Self {
             let settings = gio::Settings::new("io.github.jpadgett314.Dinghy");
-            let url: String = settings.get("api-url");
-            let tok: String = settings.get("api-token");
+            let connection = Connection::from(&settings);
 
-            let connection = Connection::new(&url, &tok);
-
-            Self {
-                connection,
-                settings,
-            }
+            Self { connection, settings }
         }
     }
 
@@ -59,6 +56,7 @@ mod imp {
         type ParentType = adw::Application;
     }
 
+    #[glib::derived_properties]
     impl ObjectImpl for DinghyApplication {
         fn constructed(&self) {
             self.parent_constructed();

@@ -74,8 +74,6 @@ impl ConnectDialog {
         let url = self.imp().api_url_row.text();
         let token = self.imp().api_token_row.text();
 
-        self.connection().set_api(url.as_str(), token.as_str());
-
         if let (Ok(_), Ok(_)) = (
             self.settings().set_string("api-url", url.as_str()),
             self.settings().set_string("api-token", token.as_str())
