@@ -18,9 +18,8 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+mod api;
 mod application;
-mod bookmark;
-mod bookmark_storage;
 mod config;
 mod icon_cache;
 mod models;

@@ -5,9 +5,9 @@ use gettextrs::{gettext, ngettext};
 use gtk::prelude::*;
 use gtk::{gio, glib, SearchBar, SearchEntry, ToggleButton};
 
-use crate::bookmark_storage::BookmarkStorage;
+use crate::api::BookmarkStorage;
 use crate::models::Connection;
-use crate::models::BookmarkPagination;
+use crate::models::BookmarkFeedModel;
 use crate::views::BookmarkFeed;
 
 mod imp {
@@ -24,7 +24,7 @@ mod imp {
         #[property(get, nullable)]
         pub bookmark_storage: RefCell<Option<BookmarkStorage>>,
         #[property(get)]
-        pub bookmark_pagination: RefCell<Option<BookmarkPagination>>,
+        pub bookmark_feed_model: RefCell<Option<BookmarkFeedModel>>,
         #[template_child]
         pub bookmark_feed_widget: TemplateChild<BookmarkFeed>,
         #[template_child]
@@ -83,7 +83,7 @@ glib::wrapper! {
 impl DinghyClient {
     #[template_callback]
     fn on_dependencies_changed(&self) {
-        if self.bookmark_pagination().is_some() {
+        if self.bookmark_feed_model().is_some() {
             return;
         }
         let (Some(connection), Some(settings)) = (self.connection(), self.settings()) else {
@@ -91,9 +91,9 @@ impl DinghyClient {
         };
 
         let storage = BookmarkStorage::new(&connection);
-        let pagination = BookmarkPagination::new(storage.clone(), settings);
+        let pagination = BookmarkFeedModel::new(storage.clone(), settings);
         self.imp().bookmark_storage.replace(Some(storage));
-        self.imp().bookmark_pagination.replace(Some(pagination.clone()));
+        self.imp().bookmark_feed_model.replace(Some(pagination.clone()));
         self.imp().bookmark_feed_widget.set_model(pagination);
 
         self.refresh();
@@ -110,7 +110,7 @@ impl DinghyClient {
     }
 
     pub fn refresh_bookmarks(&self) {
-        if let Some(pagination) = self.bookmark_pagination() {
+        if let Some(pagination) = self.bookmark_feed_model() {
             pagination.fetch_query(self.imp().search_entry.text().to_string());
         }
     }

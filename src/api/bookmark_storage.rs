@@ -1,7 +1,7 @@
 use gtk::glib;
 use linkding::ListBookmarksArgs;
 
-use crate::bookmark::{to_create_req, to_internal, to_update_req, Bookmark};
+use crate::api::{to_create_req, to_internal, to_update_req, Bookmark};
 use crate::models::Connection;
 
 #[derive(Debug, Default, Clone, glib::Boxed)]

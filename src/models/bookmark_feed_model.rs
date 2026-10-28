@@ -5,14 +5,14 @@ use adw::prelude::*;
 use adw::subclass::prelude::*;
 use gtk::{gio, glib};
 
-use crate::bookmark_storage::BookmarkStorage;
+use crate::api::BookmarkStorage;
 use crate::models::BookmarkCardModel;
 
 mod imp {
     use super::*;
 
     #[derive(Debug, Default)]
-    pub struct BookmarkPaginationState {
+    pub struct BookmarkFeedModelState {
         pub bookmarks: BookmarkStorage,
         pub bookmark_list: Vec<BookmarkCardModel>,
         pub query: String,
@@ -21,19 +21,19 @@ mod imp {
     }
 
     #[derive(Debug, Default)]
-    pub struct BookmarkPagination {
-        pub state: Mutex<BookmarkPaginationState>,
+    pub struct BookmarkFeedModel {
+        pub state: Mutex<BookmarkFeedModelState>,
     }
 
     #[glib::object_subclass]
-    impl ObjectSubclass for BookmarkPagination {
-        const NAME: &str = "BookmarkPagination";
-        type Type = super::BookmarkPagination;
+    impl ObjectSubclass for BookmarkFeedModel {
+        const NAME: &str = "BookmarkFeedModel";
+        type Type = super::BookmarkFeedModel;
         type ParentType = glib::Object;
         type Interfaces = (gio::ListModel,);
     }
 
-    impl ListModelImpl for BookmarkPagination {
+    impl ListModelImpl for BookmarkFeedModel {
         fn item_type(&self) -> glib::Type {
             BookmarkCardModel::static_type()
         }
@@ -56,7 +56,7 @@ mod imp {
         }
     }
 
-    impl BookmarkPagination {
+    impl BookmarkFeedModel {
         pub fn fetch_query(&self, query: String) {
             {
                 let mut state = self.state.lock().unwrap();
@@ -124,17 +124,17 @@ mod imp {
         }
     }
 
-    impl ObjectImpl for BookmarkPagination {}
+    impl ObjectImpl for BookmarkFeedModel {}
 }
 
 glib::wrapper! {
-    pub struct BookmarkPagination(ObjectSubclass<imp::BookmarkPagination>)
+    pub struct BookmarkFeedModel(ObjectSubclass<imp::BookmarkFeedModel>)
         @implements gio::ListModel;
 }
 
-impl BookmarkPagination {
+impl BookmarkFeedModel {
     pub fn new(api: BookmarkStorage, cfg: gio::Settings) -> Self {
-        let object: BookmarkPagination = glib::Object::builder().build();
+        let object: BookmarkFeedModel = glib::Object::builder().build();
 
         {
             let mut state = object.imp().state.lock().unwrap();
@@ -155,7 +155,7 @@ impl BookmarkPagination {
     }
 }
 
-impl Default for BookmarkPagination {
+impl Default for BookmarkFeedModel {
     fn default() -> Self {
         glib::Object::builder().build()
     }

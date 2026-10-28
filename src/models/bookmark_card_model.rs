@@ -4,7 +4,7 @@ use adw::prelude::*;
 use adw::subclass::prelude::*;
 use gtk::{gdk, gio, glib};
 
-use crate::bookmark::Bookmark;
+use crate::api::Bookmark;
 use crate::icon_cache::fetch_icon;
 
 mod imp {

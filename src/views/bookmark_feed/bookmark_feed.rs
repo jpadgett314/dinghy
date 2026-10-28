@@ -4,7 +4,7 @@ use adw::prelude::*;
 use adw::subclass::prelude::*;
 use gtk::{glib};
 
-use crate::models::{BookmarkCardModel, BookmarkPagination};
+use crate::models::{BookmarkCardModel, BookmarkFeedModel};
 use crate::views::BookmarkCard;
 
 mod imp {
@@ -13,7 +13,7 @@ mod imp {
     #[derive(Default, gtk::CompositeTemplate)]
     #[template(resource = "/io/github/jpadgett314/Dinghy/views/bookmark_feed/bookmark_feed.ui")]
     pub struct BookmarkFeed {
-        pub model: Mutex<BookmarkPagination>,
+        pub model: Mutex<BookmarkFeedModel>,
         #[template_child]
         pub list: gtk::TemplateChild<gtk::ListView>,
         #[template_child]
@@ -44,7 +44,7 @@ mod imp {
         fn constructed(&self) {
             self.parent_constructed();
 
-            let model = BookmarkPagination::default();
+            let model = BookmarkFeedModel::default();
 
             self.selection.set_model(Some(&model));
             self.set_model(model);
@@ -52,11 +52,11 @@ mod imp {
     }
 
     impl BookmarkFeed {
-        pub fn get_model(&self) -> BookmarkPagination {
+        pub fn get_model(&self) -> BookmarkFeedModel {
             self.model.lock().unwrap().clone()
         }
 
-        pub fn set_model(&self, model: BookmarkPagination) {
+        pub fn set_model(&self, model: BookmarkFeedModel) {
             let mut model_guard = self.model.lock().unwrap();
             *model_guard = model.clone();
             self.selection.set_model(Some(&model));
@@ -119,11 +119,11 @@ impl BookmarkFeed {
         }
     }
 
-    pub fn get_model(&self) -> BookmarkPagination {
+    pub fn get_model(&self) -> BookmarkFeedModel {
         self.imp().get_model()
     }
 
-    pub fn set_model(&self, model: BookmarkPagination) {
+    pub fn set_model(&self, model: BookmarkFeedModel) {
         self.imp().set_model(model)
     }
 }
