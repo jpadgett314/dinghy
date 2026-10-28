@@ -20,8 +20,8 @@
 
 use std::cell::RefCell;
 
+use adw::prelude::*;
 use adw::subclass::prelude::*;
-use gtk::prelude::*;
 use gtk::{gio, glib};
 
 use crate::models::Connection;
@@ -42,6 +42,20 @@ mod imp {
         pub client: TemplateChild<DinghyClient>,
         #[template_child]
         pub stack: TemplateChild<gtk::Stack>,
+        #[template_child]
+        pub toast_overlay: TemplateChild<adw::ToastOverlay>,
+    }
+
+    impl DinghyWindow {
+        fn toast_action(&self, param: Option<&glib::Variant>) {
+            let title = param
+                .unwrap()
+                .get::<String>()
+                .unwrap();
+
+            self.toast_overlay
+                .add_toast(adw::Toast::new(&title));
+        }
     }
 
     #[glib::object_subclass]
@@ -54,6 +68,11 @@ mod imp {
             DinghyClient::ensure_type();
             DinghyWelcome::ensure_type();
             klass.bind_template();
+            klass.install_action(
+                "win.toast",
+                Some(glib::VariantTy::STRING),
+                |win, _, arg| win.imp().toast_action(arg)
+            );
         }
 
         fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
@@ -73,6 +92,7 @@ mod imp {
             }
         }
     }
+
     impl WidgetImpl for DinghyWindow {}
     impl WindowImpl for DinghyWindow {}
     impl ApplicationWindowImpl for DinghyWindow {}
@@ -115,4 +135,3 @@ impl DinghyWindow {
             .set_visible_child_name("welcome");
     }
 }
-

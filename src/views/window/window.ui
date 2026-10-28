@@ -7,7 +7,7 @@
     <property name="default-width">800</property>
     <property name="default-height">680</property>
     <property name="content">
-      <object class="AdwToastOverlay">
+      <object class="AdwToastOverlay" id="toast_overlay">
         <property name="child">
           <object class="GtkStack" id="stack">
             <child>

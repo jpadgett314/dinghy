@@ -17,11 +17,11 @@
                 <property name="subtitle"></property>
               </object>
             </property>
-            <child>
+            <child type="start">
               <object class="GtkButton">
-                <property name="icon-name">view-refresh-symbolic</property>
-                <property name="action-name">client.refresh-bookmarks</property>
-                <property name="tooltip-text" translatable="yes">Refresh Bookmarks</property>
+                <property name="icon-name">list-add-symbolic</property>
+                <property name="tooltip-text" translatable="yes">Add Bookmark</property>
+                <signal name="clicked" handler="on_create_bookmark_clicked" swapped="yes"/>
               </object>
             </child>
             <child type="end">
@@ -30,6 +30,13 @@
                 <property name="icon-name">open-menu-symbolic</property>
                 <property name="tooltip-text" translatable="yes">Main Menu</property>
                 <property name="menu-model">primary_menu</property>
+              </object>
+            </child>
+            <child type="end">
+              <object class="GtkButton">
+                <property name="icon-name">view-refresh-symbolic</property>
+                <property name="action-name">client.refresh-bookmarks</property>
+                <property name="tooltip-text" translatable="yes">Refresh Bookmarks</property>
               </object>
             </child>
             <child type="end">

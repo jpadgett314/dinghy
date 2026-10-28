@@ -1,14 +1,14 @@
 use std::cell::RefCell;
 
+use adw::prelude::*;
 use adw::subclass::prelude::*;
 use gettextrs::{gettext, ngettext};
-use gtk::prelude::*;
 use gtk::{gio, glib, SearchBar, SearchEntry, ToggleButton};
 
 use crate::api::BookmarkStorage;
 use crate::models::Connection;
 use crate::models::BookmarkFeedModel;
-use crate::views::BookmarkFeed;
+use crate::views::{CreateBookmarkView, BookmarkFeed};
 
 mod imp {
     use super::*;
@@ -82,6 +82,13 @@ glib::wrapper! {
 #[gtk::template_callbacks]
 impl DinghyClient {
     #[template_callback]
+    fn on_create_bookmark_clicked(&self) {
+        if let Some(storage) = self.bookmark_storage() {
+            CreateBookmarkView::new(&storage, self).present(Some(self));
+        }
+    }
+
+    #[template_callback]
     fn on_dependencies_changed(&self) {
         if self.bookmark_feed_model().is_some() {
             return;
@@ -103,6 +110,7 @@ impl DinghyClient {
     fn on_search_changed(&self) {
         self.refresh();
     }
+
 
     pub fn refresh(&self) {
         self.refresh_bookmarks();

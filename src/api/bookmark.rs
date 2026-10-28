@@ -100,8 +100,8 @@ pub fn to_create_req(internal: &Bookmark) -> CreateBookmarkBody {
         unread: Some(internal.unread.clone()),
         shared: Some(internal.shared.clone()),
         tag_names: Some(internal.tag_names.clone()),
-        date_added: Some(internal.date_added.clone()),
-        date_modified: Some(internal.date_modified.clone()),
+        date_added: None,
+        date_modified: None,
         website_title: internal.website_title.clone(),
         website_description: internal.website_description.clone(),
     }
@@ -125,5 +125,4 @@ pub fn to_update_req(internal: &Bookmark) -> UpdateBookmarkBody {
         website_description: internal.website_description.clone(),
     }
 }
-
 

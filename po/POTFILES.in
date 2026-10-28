@@ -8,5 +8,7 @@ src/bookmark_list.ui
 src/views/client/client.rs
 src/views/client/client.ui
 src/views/connect/connect.ui
+src/views/create_bookmark/create_bookmark.rs
+src/views/create_bookmark/create_bookmark.ui
 src/views/welcome/welcome.ui
 src/views/window/window.ui
