@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
   <requires lib="gtk" version="4.0"/>
+  <requires lib="Adw" version="1.8"/>
   <template class="BookmarkCard" parent="GtkBox">
     <property name="orientation">horizontal</property>
     <property name="spacing">16</property>
@@ -11,6 +12,11 @@
     </binding>
     <binding name="favicon">
       <lookup name="favicon-paintable" type="BookmarkCardModel">
+        <lookup name="model">BookmarkCard</lookup>
+      </lookup>
+    </binding>
+    <binding name="tag-names">
+      <lookup name="tag-names" type="BookmarkCardModel">
         <lookup name="model">BookmarkCard</lookup>
       </lookup>
     </binding>
@@ -33,7 +39,7 @@
     <child>
       <object class="GtkBox">
         <property name="orientation">vertical</property>
-        <property name="spacing">6</property>
+        <property name="spacing">8</property>
         <property name="hexpand">True</property>
         <child>
           <object class="GtkLabel" id="title_label">
@@ -97,6 +103,17 @@
               <class name="caption"/>
               <class name="dim-label"/>
             </style>
+          </object>
+        </child>
+        <child>
+          <object class="AdwWrapBox" id="tags_box">
+            <property name="child-spacing">4</property>
+            <property name="line-spacing">4</property>
+            <binding name="visible">
+              <closure type="gboolean" function="has_tags">
+                <lookup name="tag-names">BookmarkCard</lookup>
+              </closure>
+            </binding>
           </object>
         </child>
       </object>

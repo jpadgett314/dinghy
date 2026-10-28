@@ -1,4 +1,3 @@
-/* ListView owns focus and activation; its children are independent Adwaita cards. */
 listview.bookmark-feed {
   background: none;
   padding: 16px;
@@ -11,12 +10,17 @@ listview.bookmark-feed > row {
   outline: none;
 }
 
+listview.bookmark-feed > row:focus-visible .bookmark-card {
+  outline: 2px solid @accent_color;
+  outline-offset: -2px;
+}
+
 .bookmark-card {
   padding: 16px;
 }
 
-listview.bookmark-feed > row:focus-visible .bookmark-card {
-  outline: 2px solid @accent_color;
-  outline-offset: -2px;
+.bookmark-tag {
+  padding: 2px 8px;
+  margin-bottom: -8px;
 }
 

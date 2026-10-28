@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <requires lib="gtk" version="4.0"/>
+  <template class="BookmarkTag" parent="GtkButton">
+    <signal name="clicked" handler="on_clicked" swapped="yes"/>
+    <binding name="label">
+      <lookup name="tag-name">BookmarkTag</lookup>
+    </binding>
+    <style>
+      <class name="bookmark-tag"/>
+      <class name="caption"/>
+      <class name="flat"/>
+    </style>
+  </template>
+</interface>

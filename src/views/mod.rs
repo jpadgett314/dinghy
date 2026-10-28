@@ -2,6 +2,8 @@
 mod bookmark_card;
 #[path = "bookmark_feed/bookmark_feed.rs"]
 mod bookmark_feed;
+#[path = "bookmark_tag/bookmark_tag.rs"]
+mod bookmark_tag;
 #[path = "client/client.rs"]
 mod client;
 #[path = "connect/connect.rs"]
@@ -15,6 +17,7 @@ mod window;
 
 pub use bookmark_card::BookmarkCard;
 pub use bookmark_feed::BookmarkFeed;
+pub use bookmark_tag::BookmarkTag;
 pub use client::DinghyClient;
 pub use connect::ConnectDialog;
 pub use preferences::PreferencesDialog;

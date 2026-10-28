@@ -1,10 +1,11 @@
-use std::cell::{RefCell};
+use std::cell::RefCell;
 
 use adw::prelude::*;
 use adw::subclass::prelude::*;
 use gtk::{gdk, glib};
 
 use crate::models::BookmarkCardModel;
+use crate::views::BookmarkTag;
 
 mod imp {
     use super::*;
@@ -17,6 +18,10 @@ mod imp {
         pub model: RefCell<Option<BookmarkCardModel>>,
         #[property(get, set = Self::set_favicon, nullable)]
         pub favicon: RefCell<Option<gdk::Paintable>>,
+        #[property(get, set = Self::set_tag_names)]
+        pub tag_names: RefCell<glib::StrV>,
+        #[template_child]
+        pub tags_box: gtk::TemplateChild<adw::WrapBox>,
         #[template_child]
         pub icon_image: gtk::TemplateChild<gtk::Image>,
     }
@@ -38,6 +43,15 @@ mod imp {
     }
 
     impl BookmarkCard {
+        fn set_tag_names(&self, tag_names: glib::StrV) {
+            self.tags_box.remove_all();
+            for tag_name in &tag_names {
+                let display_name = format!("#{}", tag_name);
+                self.tags_box.append(&BookmarkTag::new(&display_name));
+            }
+            self.tag_names.replace(tag_names);
+        }
+
         fn set_favicon(&self, favicon: Option<gdk::Paintable>) {
             match favicon {
                 None => self.set_favicon_placeholder(),
@@ -78,6 +92,11 @@ impl BookmarkCard {
     #[template_callback(function)]
     fn has_text(text: &str) -> bool {
         !text.is_empty()
+    }
+
+    #[template_callback(function)]
+    fn has_tags(tag_names: glib::StrV) -> bool {
+        !tag_names.is_empty()
     }
 }
 
