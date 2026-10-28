@@ -104,8 +104,6 @@ mod imp {
 
                 let Ok(matches) = reply else { return };
 
-                if matches.len() < 1 { return }
-
                 let bookmarks = matches.iter().map(BookmarkCardModel::new);
 
                 let (index, taken, added) = {
