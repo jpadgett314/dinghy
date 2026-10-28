@@ -65,21 +65,6 @@ mod imp {
 
     #[glib::derived_properties]
     impl ObjectImpl for DinghyClient {
-        fn constructed(&self) {
-            self.parent_constructed();
-
-            let obj = self.obj();
-            self.search_entry.connect_search_changed(glib::clone!(
-                #[weak]
-                obj,
-                move |_| {
-                    obj.refresh_bookmarks();
-                    obj.refresh_title();
-                }
-            ));
-            obj.on_notify_property();
-        }
-
         fn dispose(&self) {
             self.dispose_template();
         }
@@ -97,7 +82,7 @@ glib::wrapper! {
 #[gtk::template_callbacks]
 impl DinghyClient {
     #[template_callback]
-    fn on_notify_property(&self) {
+    fn on_dependencies_changed(&self) {
         if self.bookmark_pagination().is_some() {
             return;
         }
@@ -111,6 +96,11 @@ impl DinghyClient {
         self.imp().bookmark_pagination.replace(Some(pagination.clone()));
         self.imp().bookmark_feed_widget.set_model(pagination);
 
+        self.refresh();
+    }
+
+    #[template_callback]
+    fn on_search_changed(&self) {
         self.refresh();
     }
 

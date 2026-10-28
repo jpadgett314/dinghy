@@ -3,8 +3,8 @@
   <requires lib="gtk" version="4.0"/>
   <requires lib="Adw" version="1.0"/>
   <template class="DinghyClient" parent="GtkBox">
-    <signal name="notify::connection" handler="on_notify_property"/>
-    <signal name="notify::settings" handler="on_notify_property"/>
+    <signal name="notify::connection" handler="on_dependencies_changed"/>
+    <signal name="notify::settings" handler="on_dependencies_changed"/>
     <property name="orientation">vertical</property>
     <child>
       <object class="AdwToolbarView" id="toolbar_view">
@@ -48,6 +48,7 @@
             <child>
               <object class="GtkSearchEntry" id="search_entry">
                 <property name="search-delay">100</property>
+                <signal name="changed" handler="on_search_changed" swapped="yes"/>
               </object>
             </child>
           </object>
