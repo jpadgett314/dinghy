@@ -6,7 +6,6 @@ use gettextrs::gettext;
 use gtk::{gio, glib};
 
 use crate::api::{Bookmark, BookmarkStorage};
-use crate::views::DinghyClient;
 
 mod imp {
     use super::*;
@@ -17,8 +16,6 @@ mod imp {
     pub struct CreateBookmarkView {
         #[property(get, set, construct_only)]
         pub bookmark_storage: OnceCell<BookmarkStorage>,
-        #[property(get, set, construct_only)]
-        pub client_view: OnceCell<DinghyClient>,
         #[template_child]
         pub url_row: TemplateChild<adw::EntryRow>,
         #[template_child]
@@ -65,10 +62,9 @@ glib::wrapper! {
 
 #[gtk::template_callbacks]
 impl CreateBookmarkView {
-    pub fn new(storage: &BookmarkStorage, client: &DinghyClient) -> Self {
+    pub fn new(storage: &BookmarkStorage) -> Self {
         glib::Object::builder()
             .property("bookmark-storage", storage)
-            .property("client-view", client)
             .build()
     }
 
@@ -102,12 +98,9 @@ impl CreateBookmarkView {
             } else {
                 gettext("Failed to create bookmark")
             };
-
             let _ = obj.activate_action("win.toast", Some(&message.to_variant()));
-            let _ = obj.client_view().activate_action("client.refresh-bookmarks", None);
-
+            let _ = obj.activate_action("client.refresh-bookmarks", None);
             obj.imp().create_button.set_sensitive(true);
-
             if success {
                 obj.close();
             }

@@ -17,13 +17,15 @@ mod imp {
     #[properties(wrapper_type = super::DinghyClient)]
     #[template(resource = "/io/github/jpadgett314/Dinghy/views/client/client.ui")]
     pub struct DinghyClient {
-        #[property(get, set)]
-        pub settings: RefCell<Option<gio::Settings>>,
-        #[property(get, set)]
+        #[property(get, nullable)]
+        pub actions: RefCell<Option<gio::SimpleActionGroup>>,
+        #[property(get, set, nullable)]
         pub connection: RefCell<Option<Connection>>,
+        #[property(get, set, nullable)]
+        pub settings: RefCell<Option<gio::Settings>>,
         #[property(get, nullable)]
         pub bookmark_storage: RefCell<Option<BookmarkStorage>>,
-        #[property(get)]
+        #[property(get, nullable)]
         pub bookmark_feed_model: RefCell<Option<BookmarkFeedModel>>,
         #[template_child]
         pub bookmark_feed_widget: TemplateChild<BookmarkFeed>,
@@ -47,15 +49,6 @@ mod imp {
             BookmarkFeed::ensure_type();
             klass.bind_template();
             klass.bind_template_instance_callbacks();
-            klass.install_action("client.refresh-bookmarks", None, |client, _, _| {
-                client.refresh_bookmarks();
-            });
-            klass.install_action("client.toggle-search", None, |client, _, _| {
-                let imp = client.imp();
-                let active = !imp.search_toggle_button.is_active();
-                imp.search_toggle_button.set_active(active);
-                imp.search_bar.set_search_mode(active);
-            });
         }
 
         fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
@@ -65,10 +58,16 @@ mod imp {
 
     #[glib::derived_properties]
     impl ObjectImpl for DinghyClient {
+        fn constructed(&self) {
+            self.parent_constructed();
+            self.obj().setup_gactions();
+        }
+
         fn dispose(&self) {
             self.dispose_template();
         }
     }
+
     impl WidgetImpl for DinghyClient {}
     impl BoxImpl for DinghyClient {}
 }
@@ -81,10 +80,37 @@ glib::wrapper! {
 
 #[gtk::template_callbacks]
 impl DinghyClient {
+    fn setup_gactions(&self) {
+        type ActionBuilder = gio::ActionEntryBuilder::<gio::SimpleActionGroup>;
+
+        let actions = &self.imp().actions;
+        let client1 = self.clone();
+        let client2 = self.clone();
+        let entries = [
+            ActionBuilder::new("refresh-bookmarks")
+                .activate(move |_, _, _| client1.refresh())
+                .build(),
+            ActionBuilder::new("toggle-search")
+                .activate(move |_, _, _| client2.on_toggle_search())
+                .build(),
+        ];
+
+        actions.replace(Some(gio::SimpleActionGroup::new()));
+
+        actions.borrow().as_ref().unwrap().add_action_entries(entries);
+    }
+
+    fn on_toggle_search(&self) {
+        let imp = self.imp();
+        let active = !imp.search_toggle_button.is_active();
+        imp.search_toggle_button.set_active(active);
+        imp.search_bar.set_search_mode(active);
+    }
+
     #[template_callback]
     fn on_create_bookmark_clicked(&self) {
         if let Some(storage) = self.bookmark_storage() {
-            CreateBookmarkView::new(&storage, self).present(Some(self));
+            CreateBookmarkView::new(&storage).present(Some(self));
         }
     }
 
@@ -111,19 +137,13 @@ impl DinghyClient {
         self.refresh();
     }
 
-
-    pub fn refresh(&self) {
-        self.refresh_bookmarks();
-        self.refresh_title();
-    }
-
-    pub fn refresh_bookmarks(&self) {
+    fn refresh_bookmarks(&self) {
         if let Some(pagination) = self.bookmark_feed_model() {
             pagination.fetch_query(self.imp().search_entry.text().to_string());
         }
     }
 
-    pub fn refresh_title(&self) {
+    fn refresh_title(&self) {
         let (Some(settings), Some(connection)) = (self.settings(), self.connection()) else {
             return;
         };
@@ -148,5 +168,10 @@ impl DinghyClient {
             title_widget.set_title(&title);
             title_widget.set_subtitle(&count);
         });
+    }
+
+    pub fn refresh(&self) {
+        self.refresh_bookmarks();
+        self.refresh_title();
     }
 }

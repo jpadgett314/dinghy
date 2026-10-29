@@ -47,7 +47,7 @@ mod imp {
     }
 
     impl DinghyWindow {
-        fn toast_action(&self, param: Option<&glib::Variant>) {
+        pub fn toast_action(&self, param: Option<&glib::Variant>) {
             let title = param
                 .unwrap()
                 .get::<String>()
@@ -68,11 +68,6 @@ mod imp {
             DinghyClient::ensure_type();
             DinghyWelcome::ensure_type();
             klass.bind_template();
-            klass.install_action(
-                "win.toast",
-                Some(glib::VariantTy::STRING),
-                |win, _, arg| win.imp().toast_action(arg)
-            );
         }
 
         fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
@@ -85,6 +80,7 @@ mod imp {
         fn constructed(&self) {
             self.parent_constructed();
             let obj = self.obj();
+            obj.setup_gactions();
             if obj.settings().is_some_and(|p| p.get("onboarded")) {
                 obj.show_client();
             } else {
@@ -107,6 +103,17 @@ glib::wrapper! {
 }
 
 impl DinghyWindow {
+    fn setup_gactions(&self) {
+        let toast_action = gio::ActionEntry::builder("toast")
+            .parameter_type(Some(glib::VariantTy::STRING))
+            .activate(move |win: &Self, _, param| win.imp().toast_action(param))
+            .build();
+
+        self.add_action_entries([toast_action]);
+
+        self.insert_action_group("client", self.imp().client.actions().as_ref());
+    }
+
     pub fn new<P: IsA<gtk::Application>>(
         application: &P,
         settings: &gio::Settings,

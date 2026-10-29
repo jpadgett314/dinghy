@@ -42,6 +42,7 @@ mod imp {
             self.dispose_template();
         }
     }
+
     impl WidgetImpl for DinghyWelcome {}
     impl BoxImpl for DinghyWelcome {}
 }
