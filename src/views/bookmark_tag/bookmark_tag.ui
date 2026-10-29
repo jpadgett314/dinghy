@@ -8,8 +8,8 @@
     </binding>
     <style>
       <class name="bookmark-tag"/>
-      <class name="caption"/>
-      <class name="flat"/>
+      <class name="pill"/>
+      <class name="body"/>
     </style>
   </template>
 </interface>

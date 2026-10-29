@@ -30,7 +30,6 @@
         <property name="valign">start</property>
         <property name="pixel-size">32</property>
         <property name="icon-name">user-bookmarks-symbolic</property>
-        <property name="margin-top">4</property>
         <style>
           <class name="dim-label"/>
         </style>
@@ -107,8 +106,8 @@
         </child>
         <child>
           <object class="AdwWrapBox" id="tags_box">
-            <property name="child-spacing">4</property>
-            <property name="line-spacing">4</property>
+            <property name="child-spacing">8</property>
+            <property name="line-spacing">8</property>
             <binding name="visible">
               <closure type="gboolean" function="has_tags">
                 <lookup name="tag-names">BookmarkCard</lookup>

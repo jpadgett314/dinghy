@@ -46,7 +46,7 @@ mod imp {
         fn set_tag_names(&self, tag_names: glib::StrV) {
             self.tags_box.remove_all();
             for tag_name in &tag_names {
-                let display_name = format!("#{}", tag_name);
+                let display_name = format!("{}", tag_name);
                 self.tags_box.append(&BookmarkTag::new(&display_name));
             }
             self.tag_names.replace(tag_names);
