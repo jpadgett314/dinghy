@@ -86,12 +86,17 @@ impl DinghyClient {
         let actions = &self.imp().actions;
         let client1 = self.clone();
         let client2 = self.clone();
+        let client3 = self.clone();
         let entries = [
             ActionBuilder::new("refresh-bookmarks")
                 .activate(move |_, _, _| client1.refresh())
                 .build(),
             ActionBuilder::new("toggle-search")
-                .activate(move |_, _, _| client2.on_toggle_search())
+                .activate(move |_, _, _| client2.on_toggle_search_action())
+                .build(),
+            ActionBuilder::new("search")
+                .parameter_type(Some(glib::VariantTy::STRING))
+                .activate(move |_, _, param| client3.on_search_action(param))
                 .build(),
         ];
 
@@ -100,11 +105,23 @@ impl DinghyClient {
         actions.borrow().as_ref().unwrap().add_action_entries(entries);
     }
 
-    fn on_toggle_search(&self) {
+    fn on_toggle_search_action(&self) {
         let imp = self.imp();
         let active = !imp.search_toggle_button.is_active();
         imp.search_toggle_button.set_active(active);
         imp.search_bar.set_search_mode(active);
+    }
+
+    fn on_search_action(&self, param: Option<&glib::Variant>) {
+        let query = param.unwrap().get::<String>().unwrap();
+
+        let Some(pagination) = self.bookmark_feed_model() else { return };
+
+        let imp = self.imp();
+        imp.search_toggle_button.set_active(true);
+        imp.search_bar.set_search_mode(true);
+        imp.search_entry.set_text(&query);
+        pagination.fetch_query(query);
     }
 
     #[template_callback]

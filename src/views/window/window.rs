@@ -46,18 +46,6 @@ mod imp {
         pub toast_overlay: TemplateChild<adw::ToastOverlay>,
     }
 
-    impl DinghyWindow {
-        pub fn toast_action(&self, param: Option<&glib::Variant>) {
-            let title = param
-                .unwrap()
-                .get::<String>()
-                .unwrap();
-
-            self.toast_overlay
-                .add_toast(adw::Toast::new(&title));
-        }
-    }
-
     #[glib::object_subclass]
     impl ObjectSubclass for DinghyWindow {
         const NAME: &'static str = "DinghyWindow";
@@ -106,12 +94,23 @@ impl DinghyWindow {
     fn setup_gactions(&self) {
         let toast_action = gio::ActionEntry::builder("toast")
             .parameter_type(Some(glib::VariantTy::STRING))
-            .activate(move |win: &Self, _, param| win.imp().toast_action(param))
+            .activate(move |win: &Self, _, param| win.on_toast_action(param))
             .build();
 
         self.add_action_entries([toast_action]);
 
         self.insert_action_group("client", self.imp().client.actions().as_ref());
+    }
+
+    fn on_toast_action(&self, param: Option<&glib::Variant>) {
+        let title = param
+            .unwrap()
+            .get::<String>()
+            .unwrap();
+
+        self.imp()
+            .toast_overlay
+            .add_toast(adw::Toast::new(&title));
     }
 
     pub fn new<P: IsA<gtk::Application>>(

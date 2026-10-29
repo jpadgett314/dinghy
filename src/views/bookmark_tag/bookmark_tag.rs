@@ -58,7 +58,8 @@ impl BookmarkTag {
 
     #[template_callback]
     pub fn on_clicked(&self) {
-        dbg!(&self.imp().tag_name);
+        let query = self.imp().tag_name.borrow().to_variant();
+        let _ = self.activate_action("client.search", Some(&query));
     }
 }
 
