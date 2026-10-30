@@ -23,6 +23,20 @@ mod imp {
         pub api_token_row: TemplateChild<adw::PasswordEntryRow>,
     }
 
+    impl ConnectDialog {
+        fn bind_settings(&self) {
+            let settings = self.settings.get().unwrap();
+
+            settings
+                .bind("api-url", &*self.api_url_row, "text")
+                .build();
+
+            settings
+                .bind("api-token", &*self.api_token_row, "text")
+                .build();
+        }
+    }
+
     #[glib::object_subclass]
     impl ObjectSubclass for ConnectDialog {
         const NAME: &'static str = "ConnectDialog";
@@ -41,10 +55,16 @@ mod imp {
 
     #[glib::derived_properties]
     impl ObjectImpl for ConnectDialog {
+        fn constructed(&self) {
+            self.parent_constructed();
+            self.bind_settings();
+        }
+
         fn dispose(&self) {
             self.dispose_template();
         }
     }
+
     impl WidgetImpl for ConnectDialog {}
     impl AdwDialogImpl for ConnectDialog {}
 }
@@ -71,16 +91,8 @@ impl ConnectDialog {
 
     #[template_callback]
     fn on_connect_clicked(&self) {
-        let url = self.imp().api_url_row.text();
-        let token = self.imp().api_token_row.text();
-
-        if let (Ok(_), Ok(_)) = (
-            self.settings().set_string("api-url", url.as_str()),
-            self.settings().set_string("api-token", token.as_str())
-        ) {
-            if let Ok(_) = self.settings().set_boolean("onboarded", true) {
-                let _ = self.activate_action("app.onboard-complete", None);
-            }
+        if let Ok(_) = self.settings().set_boolean("onboarded", true) {
+            let _ = self.activate_action("app.onboard-complete", None);
         }
 
         self.close();
