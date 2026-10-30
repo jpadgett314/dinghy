@@ -1,19 +1,21 @@
-use std::sync::Mutex;
+use std::cell::RefCell;
 
 use adw::prelude::*;
 use adw::subclass::prelude::*;
-use gtk::{glib};
+use gtk::glib;
 
-use crate::models::{BookmarkCardModel, BookmarkFeedModel};
+use crate::models::{BookmarkCardModel, BookmarkFeedModel, BookmarkFeedStatus};
 use crate::views::BookmarkCard;
 
 mod imp {
     use super::*;
 
-    #[derive(Default, gtk::CompositeTemplate)]
+    #[derive(Default, glib::Properties, gtk::CompositeTemplate)]
+    #[properties(wrapper_type = super::BookmarkFeed)]
     #[template(resource = "/io/github/jpadgett314/Dinghy/views/bookmark_feed/bookmark_feed.ui")]
     pub struct BookmarkFeed {
-        pub model: Mutex<BookmarkFeedModel>,
+        #[property(get, set)]
+        pub model: RefCell<BookmarkFeedModel>,
         #[template_child]
         pub list: gtk::TemplateChild<gtk::ListView>,
         #[template_child]
@@ -40,26 +42,10 @@ mod imp {
         }
     }
 
+    #[glib::derived_properties]
     impl ObjectImpl for BookmarkFeed {
-        fn constructed(&self) {
-            self.parent_constructed();
-
-            let model = BookmarkFeedModel::default();
-
-            self.selection.set_model(Some(&model));
-            self.set_model(model);
-        }
-    }
-
-    impl BookmarkFeed {
-        pub fn get_model(&self) -> BookmarkFeedModel {
-            self.model.lock().unwrap().clone()
-        }
-
-        pub fn set_model(&self, model: BookmarkFeedModel) {
-            let mut model_guard = self.model.lock().unwrap();
-            *model_guard = model.clone();
-            self.selection.set_model(Some(&model));
+        fn dispose(&self) {
+            self.dispose_template();
         }
     }
 
@@ -75,14 +61,20 @@ glib::wrapper! {
 
 #[gtk::template_callbacks]
 impl BookmarkFeed {
+    #[template_callback(function)]
+    fn get_status_page(status: BookmarkFeedStatus) -> &'static str {
+        match status {
+            BookmarkFeedStatus::Loading => "loading",
+            BookmarkFeedStatus::Matches => "bookmark-scroller",
+            BookmarkFeedStatus::NoMatches => "no-matches",
+            BookmarkFeedStatus::EmptyServer => "no-bookmarks",
+        }
+    }
+
     #[template_callback]
     fn on_edge_reached(&self, edge: gtk::PositionType) {
         if edge == gtk::PositionType::Bottom {
-            self.imp()
-                .model
-                .lock()
-                .unwrap()
-                .fetch_more();
+            self.model().fetch_more();
         }
     }
 
@@ -111,19 +103,11 @@ impl BookmarkFeed {
     #[template_callback]
     fn on_activate(&self, position: u32) {
         if let Some(bookmark) = self
-            .get_model()
+            .model()
             .item(position)
             .and_downcast::<BookmarkCardModel>()
         {
             bookmark.open(self.root().and_downcast::<gtk::Window>().as_ref());
         }
-    }
-
-    pub fn get_model(&self) -> BookmarkFeedModel {
-        self.imp().get_model()
-    }
-
-    pub fn set_model(&self, model: BookmarkFeedModel) {
-        self.imp().set_model(model)
     }
 }

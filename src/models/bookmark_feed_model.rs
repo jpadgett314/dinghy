@@ -1,4 +1,4 @@
-use std::cell::OnceCell;
+use std::cell::{Cell, OnceCell};
 use std::sync::Mutex;
 
 use adw::prelude::*;
@@ -7,6 +7,17 @@ use gtk::{gio, glib};
 
 use crate::api::BookmarkStorage;
 use crate::models::BookmarkCardModel;
+use crate::util::EpochCounter;
+
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, glib::Enum)]
+#[enum_type(name = "BookmarkFeedStatus")]
+pub enum BookmarkFeedStatus {
+    #[default]
+    Loading,
+    Matches,
+    NoMatches,
+    EmptyServer,
+}
 
 mod imp {
     use super::*;
@@ -20,9 +31,14 @@ mod imp {
         pub settings: OnceCell<gio::Settings>,
     }
 
-    #[derive(Debug, Default)]
+    #[derive(Debug, Default, glib::Properties)]
+    #[properties(wrapper_type = super::BookmarkFeedModel)]
     pub struct BookmarkFeedModel {
         pub state: Mutex<BookmarkFeedModelState>,
+        #[property(get, builder(BookmarkFeedStatus::default()))]
+        pub status: Cell<BookmarkFeedStatus>,
+        #[property(get, set)]
+        pub epoch_counter: OnceCell<EpochCounter>,
     }
 
     #[glib::object_subclass]
@@ -39,10 +55,7 @@ mod imp {
         }
 
         fn n_items(&self) -> u32 {
-            self.state
-                .lock()
-                .unwrap()
-                .bookmark_list.len() as u32
+            self.state.lock().unwrap().bookmark_list.len() as u32
         }
 
         fn item(&self, position: u32) -> Option<glib::Object> {
@@ -79,6 +92,10 @@ mod imp {
         }
 
         pub fn fetch_and_splice(&self, replace: bool) {
+            if replace {
+                self.set_status(BookmarkFeedStatus::Loading);
+            }
+
             let (bookmarks, query, page, page_size) = {
                 let state = self.state.lock().unwrap();
 
@@ -94,15 +111,24 @@ mod imp {
                 )
             };
 
-            // A copy for the closure, to avoid premature destruction
             let model = self.obj().clone();
 
             glib::spawn_future_local(async move {
+                let epoch = model.epoch_counter().create();
+
                 let reply =
                     gio::spawn_blocking(move || bookmarks.search(query, page, page_size))
                         .await;
 
-                let Ok(matches) = reply else { return };
+                if !epoch.is_latest() {
+                    // A more recent request is in-progress; do not update feed status.
+                    return;
+                }
+
+                let Ok(matches) = reply else {
+                    model.imp().update_status();
+                    return;
+                };
 
                 let bookmarks = matches.iter().map(BookmarkCardModel::new);
 
@@ -118,10 +144,32 @@ mod imp {
                 };
 
                 model.items_changed(index as u32, taken as u32, added as u32);
+                model.imp().update_status();
             });
+        }
+
+        fn set_status(&self, status: BookmarkFeedStatus) {
+            if self.status.replace(status) != status {
+                self.obj().notify_status();
+            }
+        }
+
+        fn update_status(&self) {
+            let status = {
+                let state = self.state.lock().unwrap();
+                if !state.bookmark_list.is_empty() {
+                    BookmarkFeedStatus::Matches
+                } else if state.query.is_empty() {
+                    BookmarkFeedStatus::EmptyServer
+                } else {
+                    BookmarkFeedStatus::NoMatches
+                }
+            };
+            self.set_status(status);
         }
     }
 
+    #[glib::derived_properties]
     impl ObjectImpl for BookmarkFeedModel {}
 }
 
@@ -132,7 +180,9 @@ glib::wrapper! {
 
 impl BookmarkFeedModel {
     pub fn new(api: BookmarkStorage, cfg: gio::Settings) -> Self {
-        let object: BookmarkFeedModel = glib::Object::builder().build();
+        let object: BookmarkFeedModel = glib::Object::builder()
+            .property("epoch-counter", &EpochCounter::new())
+            .build();
 
         {
             let mut state = object.imp().state.lock().unwrap();
