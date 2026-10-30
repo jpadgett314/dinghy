@@ -5,8 +5,7 @@ use adw::subclass::prelude::*;
 use gettextrs::{gettext, ngettext};
 use gtk::{gio, glib, SearchBar, SearchEntry, ToggleButton};
 
-use crate::api::BookmarkStorage;
-use crate::models::Connection;
+use crate::api::{BookmarkStorage, Connection};
 use crate::models::BookmarkFeedModel;
 use crate::views::{CreateBookmarkView, BookmarkFeed};
 

@@ -5,6 +5,7 @@ data/io.github.jpadgett314.Dinghy.metainfo.xml.in
 data/io.github.jpadgett314.Dinghy.gschema.xml
 src/bookmark_list.rs
 src/bookmark_list.ui
+src/views/bookmark_feed/bookmark_feed.ui
 src/views/client/client.rs
 src/views/client/client.ui
 src/views/connect/connect.ui

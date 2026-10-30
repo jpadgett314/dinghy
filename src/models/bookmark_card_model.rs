@@ -5,7 +5,7 @@ use adw::subclass::prelude::*;
 use gtk::{gdk, gio, glib};
 
 use crate::api::Bookmark;
-use crate::icon_cache::fetch_icon;
+use crate::util::fetch_icon;
 
 mod imp {
     use super::*;

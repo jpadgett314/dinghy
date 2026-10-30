@@ -4,7 +4,7 @@ use adw::prelude::*;
 use adw::subclass::prelude::*;
 use gtk::{gio, glib};
 
-use crate::models::Connection;
+use crate::api::Connection;
 use crate::views::ConnectDialog;
 
 mod imp {

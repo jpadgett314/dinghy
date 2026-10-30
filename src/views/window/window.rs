@@ -24,7 +24,7 @@ use adw::prelude::*;
 use adw::subclass::prelude::*;
 use gtk::{gio, glib};
 
-use crate::models::Connection;
+use crate::api::Connection;
 use crate::views::{DinghyClient, DinghyWelcome};
 
 mod imp {

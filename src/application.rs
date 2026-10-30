@@ -23,8 +23,8 @@ use adw::subclass::prelude::*;
 use gettextrs::gettext;
 use gtk::{gio, glib};
 
+use crate::api::Connection;
 use crate::config::VERSION;
-use crate::models::Connection;
 use crate::views::DinghyWindow;
 use crate::views::PreferencesDialog;
 

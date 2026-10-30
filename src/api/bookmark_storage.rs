@@ -1,8 +1,7 @@
 use gtk::glib;
 use linkding::ListBookmarksArgs;
 
-use crate::api::{to_create_req, to_internal, to_update_req, Bookmark};
-use crate::models::Connection;
+use crate::api::{to_create_req, to_internal, to_update_req, Bookmark, Connection};
 
 #[derive(Debug, Default, Clone, glib::Boxed)]
 #[boxed_type(name = "DinghyBookmarkStorage", nullable)]

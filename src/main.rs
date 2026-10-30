@@ -21,8 +21,8 @@
 mod api;
 mod application;
 mod config;
-mod icon_cache;
 mod models;
+mod util;
 mod views;
 
 use self::application::DinghyApplication;
