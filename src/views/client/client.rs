@@ -7,7 +7,7 @@ use gtk::{gio, glib, SearchBar, SearchEntry, ToggleButton};
 
 use crate::api::{BookmarkStorage, Connection};
 use crate::models::BookmarkFeedModel;
-use crate::views::{CreateBookmarkView, BookmarkFeed};
+use crate::views::{AddBookmarkDialog, BookmarkFeed};
 
 mod imp {
     use super::*;
@@ -124,9 +124,9 @@ impl DinghyClient {
     }
 
     #[template_callback]
-    fn on_create_bookmark_clicked(&self) {
+    fn on_add_bookmark_clicked(&self) {
         if let Some(storage) = self.bookmark_storage() {
-            CreateBookmarkView::new(&storage).present(Some(self));
+            AddBookmarkDialog::new(&storage).present(Some(self));
         }
     }
 

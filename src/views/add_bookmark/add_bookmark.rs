@@ -11,9 +11,9 @@ mod imp {
     use super::*;
 
     #[derive(Debug, Default, glib::Properties, gtk::CompositeTemplate)]
-    #[properties(wrapper_type = super::CreateBookmarkView)]
-    #[template(resource = "/io/github/jpadgett314/Dinghy/views/create_bookmark/create_bookmark.ui")]
-    pub struct CreateBookmarkView {
+    #[properties(wrapper_type = super::AddBookmarkDialog)]
+    #[template(resource = "/io/github/jpadgett314/Dinghy/views/add_bookmark/add_bookmark.ui")]
+    pub struct AddBookmarkDialog {
         #[property(get, set, construct_only)]
         pub bookmark_storage: OnceCell<BookmarkStorage>,
         #[template_child]
@@ -29,9 +29,9 @@ mod imp {
     }
 
     #[glib::object_subclass]
-    impl ObjectSubclass for CreateBookmarkView {
-        const NAME: &'static str = "CreateBookmarkView";
-        type Type = super::CreateBookmarkView;
+    impl ObjectSubclass for AddBookmarkDialog {
+        const NAME: &'static str = "AddBookmarkDialog";
+        type Type = super::AddBookmarkDialog;
         type ParentType = adw::Dialog;
 
         fn class_init(klass: &mut Self::Class) {
@@ -45,23 +45,23 @@ mod imp {
     }
 
     #[glib::derived_properties]
-    impl ObjectImpl for CreateBookmarkView {
+    impl ObjectImpl for AddBookmarkDialog {
         fn dispose(&self) {
             self.dispose_template();
         }
     }
-    impl WidgetImpl for CreateBookmarkView {}
-    impl AdwDialogImpl for CreateBookmarkView {}
+    impl WidgetImpl for AddBookmarkDialog {}
+    impl AdwDialogImpl for AddBookmarkDialog {}
 }
 
 glib::wrapper! {
-    pub struct CreateBookmarkView(ObjectSubclass<imp::CreateBookmarkView>)
+    pub struct AddBookmarkDialog(ObjectSubclass<imp::AddBookmarkDialog>)
         @extends gtk::Widget, adw::Dialog,
         @implements gtk::Accessible, gtk::Buildable, gtk::ConstraintTarget;
 }
 
 #[gtk::template_callbacks]
-impl CreateBookmarkView {
+impl AddBookmarkDialog {
     pub fn new(storage: &BookmarkStorage) -> Self {
         glib::Object::builder()
             .property("bookmark-storage", storage)

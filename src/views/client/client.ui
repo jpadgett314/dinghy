@@ -21,7 +21,7 @@
               <object class="GtkButton">
                 <property name="icon-name">list-add-symbolic</property>
                 <property name="tooltip-text" translatable="yes">Add Bookmark</property>
-                <signal name="clicked" handler="on_create_bookmark_clicked" swapped="yes"/>
+                <signal name="clicked" handler="on_add_bookmark_clicked" swapped="yes"/>
               </object>
             </child>
             <child type="end">
