@@ -43,11 +43,21 @@ mod imp {
     }
 
     impl BookmarkCard {
+        fn remove_all_tags(&self) {
+            while let Some(child) = self.tags_box.first_child() {
+                if child.is::<BookmarkTag>() {
+                    self.tags_box.remove(&child);
+                } else {
+                    break;
+                }
+            }
+        }
+
         fn set_tag_names(&self, tag_names: glib::StrV) {
-            self.tags_box.remove_all();
+            self.remove_all_tags();
             for tag_name in &tag_names {
                 let display_name = format!("{}", tag_name);
-                self.tags_box.append(&BookmarkTag::new(&display_name));
+                self.tags_box.prepend(&BookmarkTag::new(&display_name));
             }
             self.tag_names.replace(tag_names);
         }
@@ -94,9 +104,11 @@ impl BookmarkCard {
         !text.is_empty()
     }
 
-    #[template_callback(function)]
-    fn has_tags(tag_names: glib::StrV) -> bool {
-        !tag_names.is_empty()
+    #[template_callback]
+    fn on_edit_clicked(&self) {
+        let Some(model) = self.model() else { return };
+        let id = model.id().to_variant();
+        let _ = self.activate_action("client.edit-bookmark", Some(&id));
     }
 }
 

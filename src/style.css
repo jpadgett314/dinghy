@@ -28,3 +28,7 @@ listview.bookmark-feed > row:focus-visible .bookmark-card {
   margin-bottom: -2px;
 }
 
+.bookmark-button {
+  margin-bottom: -2px;
+}
+

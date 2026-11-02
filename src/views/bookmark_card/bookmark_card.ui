@@ -108,11 +108,16 @@
           <object class="AdwWrapBox" id="tags_box">
             <property name="child-spacing">8</property>
             <property name="line-spacing">8</property>
-            <binding name="visible">
-              <closure type="gboolean" function="has_tags">
-                <lookup name="tag-names">BookmarkCard</lookup>
-              </closure>
-            </binding>
+            <child>
+              <object class="GtkButton">
+                <signal name="clicked" handler="on_edit_clicked" swapped="yes"/>
+                <property name="icon-name">document-edit-symbolic</property>
+                <style>
+                  <class name="circular"/>
+                  <class name="bookmark-button"/>
+                </style>
+              </object>
+            </child>
           </object>
         </child>
       </object>
