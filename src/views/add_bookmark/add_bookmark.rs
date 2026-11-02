@@ -5,7 +5,7 @@ use adw::subclass::prelude::*;
 use gettextrs::gettext;
 use gtk::{gio, glib};
 
-use crate::api::{Bookmark, BookmarkStorage};
+use crate::api::{BookmarkToAdd, BookmarkStorage};
 
 mod imp {
     use super::*;
@@ -77,12 +77,11 @@ impl AddBookmarkDialog {
     fn on_create_clicked(&self) {
         let imp = self.imp();
 
-        let bookmark = Bookmark {
+        let bookmark = BookmarkToAdd {
             url: imp.url_row.text().to_string(),
-            title: imp.name_row.text().to_string(),
-            description: imp.description_row.text().to_string(),
-            tag_names: imp.tags_row.text().split_whitespace().map(str::to_owned).collect(),
-            ..Default::default()
+            title: Some(imp.name_row.text().to_string()),
+            description: Some(imp.description_row.text().to_string()),
+            tag_names: Some(imp.tags_row.text().split_whitespace().map(str::to_owned).collect()),
         };
 
         imp.create_button.set_sensitive(false);

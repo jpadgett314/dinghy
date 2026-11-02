@@ -20,6 +20,23 @@ pub struct Bookmark {
     pub website_description: Option<String>,
 }
 
+#[derive(Clone, Default, Debug, PartialEq)]
+pub struct BookmarkChanges {
+    pub id: i32,
+    pub url: Option<String>,
+    pub title: Option<String>,
+    pub description: Option<String>,
+    pub tag_names: Option<Vec<String>>,
+}
+
+#[derive(Clone, Default, Debug, PartialEq)]
+pub struct BookmarkToAdd {
+    pub url: String,
+    pub title: Option<String>,
+    pub description: Option<String>,
+    pub tag_names: Option<Vec<String>>,
+}
+
 impl From<linkding::Bookmark> for Bookmark {
     fn from(b: linkding::Bookmark) -> Bookmark {
         Bookmark {
@@ -86,43 +103,43 @@ pub fn to_external(internal: &Bookmark) -> linkding::Bookmark {
     }
 }
 
-// TODO: check empty strings
-pub fn to_create_req(internal: &Bookmark) -> CreateBookmarkBody {
+pub fn to_create_req(internal: &BookmarkToAdd) -> CreateBookmarkBody {
     CreateBookmarkBody {
         url: internal.url.clone(),
-        title: Some(internal.title.clone()),
-        description: Some(internal.description.clone()),
-        notes: Some(internal.notes.clone()),
-        web_archive_snapshot_url: Some(internal.web_archive_snapshot_url.clone()),
-        favicon_url: internal.favicon_url.clone(),
-        preview_image_url: internal.preview_image_url.clone(),
-        is_archived: Some(internal.is_archived.clone()),
-        unread: Some(internal.unread.clone()),
-        shared: Some(internal.shared.clone()),
-        tag_names: Some(internal.tag_names.clone()),
+        title: internal.title.clone(),
+        description: internal.description.clone(),
+        notes: None,
+        web_archive_snapshot_url: None,
+        favicon_url: None,
+        preview_image_url: None,
+        is_archived: None,
+        unread: None,
+        shared: None,
+        tag_names: internal.tag_names.clone(),
         date_added: None,
         date_modified: None,
-        website_title: internal.website_title.clone(),
-        website_description: internal.website_description.clone(),
+        website_title: None,
+        website_description: None,
     }
 }
 
-pub fn to_update_req(internal: &Bookmark) -> UpdateBookmarkBody {
+pub fn to_update_req(internal: &BookmarkChanges) -> UpdateBookmarkBody {
     UpdateBookmarkBody {
-        title: Some(internal.title.clone()),
-        description: Some(internal.description.clone()),
-        notes: Some(internal.notes.clone()),
-        web_archive_snapshot_url: Some(internal.web_archive_snapshot_url.clone()),
-        favicon_url: internal.favicon_url.clone(),
-        preview_image_url: internal.preview_image_url.clone(),
-        is_archived: Some(internal.is_archived.clone()),
-        unread: Some(internal.unread.clone()),
-        shared: Some(internal.shared.clone()),
-        tag_names: Some(internal.tag_names.clone()),
-        date_added: Some(internal.date_added.clone()),
-        date_modified: Some(internal.date_modified.clone()),
-        website_title: internal.website_title.clone(),
-        website_description: internal.website_description.clone(),
+        // `url` field is not updatable by this implementation of the API
+        title: internal.title.clone(),
+        description: internal.description.clone(),
+        notes: None,
+        web_archive_snapshot_url: None,
+        favicon_url: None,
+        preview_image_url: None,
+        is_archived: None,
+        unread: None,
+        shared: None,
+        tag_names: internal.tag_names.clone(),
+        date_added: None,
+        date_modified: None,
+        website_title: None,
+        website_description: None,
     }
 }
 

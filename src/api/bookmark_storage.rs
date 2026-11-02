@@ -1,7 +1,7 @@
 use gtk::glib;
 use linkding::ListBookmarksArgs;
 
-use crate::api::{to_create_req, to_internal, to_update_req, Bookmark, Connection};
+use crate::api::{to_create_req, to_internal, to_update_req, Bookmark, BookmarkChanges, BookmarkToAdd, Connection};
 
 #[derive(Debug, Default, Clone, glib::Boxed)]
 #[boxed_type(name = "DinghyBookmarkStorage", nullable)]
@@ -36,7 +36,7 @@ impl BookmarkStorage {
         }
     }
 
-    pub fn create(&self, b: &Bookmark) -> Option<Bookmark> {
+    pub fn create(&self, b: &BookmarkToAdd) -> Option<Bookmark> {
         let req = to_create_req(b);
 
         let res = self.api.use_api(|api| api.create_bookmark(req));
@@ -51,7 +51,7 @@ impl BookmarkStorage {
         }
     }
 
-    pub fn update(&self, b: &Bookmark) -> Option<Bookmark> {
+    pub fn update(&self, b: &BookmarkChanges) -> Option<Bookmark> {
         let req = to_update_req(b);
 
         let res = self.api.use_api(|api| api.update_bookmark(b.id, req));

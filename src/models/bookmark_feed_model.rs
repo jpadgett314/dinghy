@@ -194,6 +194,17 @@ impl BookmarkFeedModel {
         object
     }
 
+    pub fn find_by_id(&self, id: i32) -> Option<BookmarkCardModel> {
+        self.imp()
+            .state
+            .lock()
+            .unwrap()
+            .bookmark_list
+            .iter()
+            .find(|bookmark| bookmark.id() == id)
+            .cloned()
+    }
+
     pub fn fetch_more(&self) -> () {
         self.imp().fetch_more();
     }

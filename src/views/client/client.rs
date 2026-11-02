@@ -7,7 +7,7 @@ use gtk::{gio, glib, SearchBar, SearchEntry, ToggleButton};
 
 use crate::api::{BookmarkStorage, Connection};
 use crate::models::BookmarkFeedModel;
-use crate::views::{AddBookmarkDialog, BookmarkFeed};
+use crate::views::{AddBookmarkDialog, BookmarkFeed, EditBookmarkDialog};
 
 mod imp {
     use super::*;
@@ -86,22 +86,46 @@ impl DinghyClient {
         let client1 = self.clone();
         let client2 = self.clone();
         let client3 = self.clone();
+        let client4 = self.clone();
+        let client5 = self.clone();
         let entries = [
+            ActionBuilder::new("add-bookmark")
+                .activate(move |_, _, _| client1.on_add_bookmark_action())
+                .build(),
+            ActionBuilder::new("edit-bookmark")
+                .parameter_type(Some(glib::VariantTy::INT32))
+                .activate(move |_, _, param| client2.on_edit_bookmark_action(param))
+                .build(),
             ActionBuilder::new("refresh-bookmarks")
-                .activate(move |_, _, _| client1.refresh())
+                .activate(move |_, _, _| client3.refresh())
                 .build(),
             ActionBuilder::new("toggle-search")
-                .activate(move |_, _, _| client2.on_toggle_search_action())
+                .activate(move |_, _, _| client4.on_toggle_search_action())
                 .build(),
             ActionBuilder::new("search")
                 .parameter_type(Some(glib::VariantTy::STRING))
-                .activate(move |_, _, param| client3.on_search_action(param))
+                .activate(move |_, _, param| client5.on_search_action(param))
                 .build(),
         ];
 
         actions.replace(Some(gio::SimpleActionGroup::new()));
 
         actions.borrow().as_ref().unwrap().add_action_entries(entries);
+    }
+
+    fn on_add_bookmark_action(&self) {
+        let Some(storage) = self.bookmark_storage() else { return };
+
+        AddBookmarkDialog::new(&storage).present(Some(self));
+    }
+
+    fn on_edit_bookmark_action(&self, param: Option<&glib::Variant>) {
+        let id = param.unwrap().get::<i32>().unwrap();
+        let Some(feed) = self.bookmark_feed_model() else { return };
+        let Some(storage) = self.bookmark_storage() else { return };
+        let Some(model) = feed.find_by_id(id) else { return };
+
+        EditBookmarkDialog::new(&storage, &model).present(Some(self));
     }
 
     fn on_toggle_search_action(&self) {
@@ -121,13 +145,6 @@ impl DinghyClient {
         imp.search_bar.set_search_mode(true);
         imp.search_entry.set_text(&query);
         pagination.fetch_query(query);
-    }
-
-    #[template_callback]
-    fn on_add_bookmark_clicked(&self) {
-        if let Some(storage) = self.bookmark_storage() {
-            AddBookmarkDialog::new(&storage).present(Some(self));
-        }
     }
 
     #[template_callback]

@@ -10,6 +10,8 @@ mod bookmark_tag;
 mod client;
 #[path = "connect/connect.rs"]
 mod connect;
+#[path = "edit_bookmark/edit_bookmark.rs"]
+mod edit_bookmark;
 #[path = "preferences/preferences.rs"]
 mod preferences;
 #[path = "welcome/welcome.rs"]
@@ -23,6 +25,7 @@ pub use bookmark_feed::BookmarkFeed;
 pub use bookmark_tag::BookmarkTag;
 pub use client::DinghyClient;
 pub use connect::ConnectDialog;
+pub use edit_bookmark::EditBookmarkDialog;
 pub use preferences::PreferencesDialog;
 pub use welcome::DinghyWelcome;
 pub use window::DinghyWindow;

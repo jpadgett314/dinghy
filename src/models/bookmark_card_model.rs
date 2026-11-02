@@ -1,4 +1,4 @@
-use std::cell::RefCell;
+use std::cell::{Cell, RefCell};
 
 use adw::prelude::*;
 use adw::subclass::prelude::*;
@@ -13,6 +13,8 @@ mod imp {
     #[derive(Debug, Default, glib::Properties)]
     #[properties(wrapper_type = super::BookmarkCardModel)]
     pub struct BookmarkCardModel {
+        #[property(get, set, construct_only)]
+        pub id: Cell<i32>,
         #[property(get, set)]
         pub description: RefCell<String>,
         #[property(get, set, nullable)]
@@ -53,6 +55,7 @@ glib::wrapper! {
 impl BookmarkCardModel {
     pub fn new(bookmark: &Bookmark) -> Self {
         glib::Object::builder()
+            .property("id", bookmark.id)
             .property("url", &bookmark.url)
             .property("title", &bookmark.title)
             .property("description", &bookmark.description)

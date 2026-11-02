@@ -20,8 +20,8 @@
             <child type="start">
               <object class="GtkButton">
                 <property name="icon-name">list-add-symbolic</property>
+                <property name="action-name">client.add-bookmark</property>
                 <property name="tooltip-text" translatable="yes">Add Bookmark</property>
-                <signal name="clicked" handler="on_add_bookmark_clicked" swapped="yes"/>
               </object>
             </child>
             <child type="end">
