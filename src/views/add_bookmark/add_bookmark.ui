@@ -5,7 +5,6 @@
   <template class="AddBookmarkDialog" parent="AdwDialog">
     <property name="title" translatable="yes">Add Bookmark</property>
     <property name="content-width">540</property>
-    <property name="follows-content-size">False</property>
     <property name="child">
       <object class="AdwToolbarView">
         <child type="top">
@@ -49,43 +48,33 @@
           </object>
         </child>
         <property name="content">
-          <object class="GtkScrolledWindow">
-            <property name="hscrollbar-policy">never</property>
-            <property name="propagate-natural-height">True</property>
-            <property name="child">
-              <object class="AdwClamp">
-                <property name="child">
-                  <object class="AdwPreferencesGroup">
-                    <property name="margin-top">24</property>
-                    <property name="margin-bottom">24</property>
-                    <property name="margin-start">24</property>
-                    <property name="margin-end">24</property>
-                    <property name="valign">start</property>
-                    <child>
-                      <object class="AdwEntryRow" id="url_row">
-                        <property name="title" translatable="yes">URL</property>
-                        <property name="input-purpose">url</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="AdwEntryRow" id="name_row">
-                        <property name="title" translatable="yes">Name</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="AdwEntryRow" id="description_row">
-                        <property name="title" translatable="yes">Description</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="TagEntryRow" id="tags_row">
-                        <property name="title" translatable="yes">Tags</property>
-                      </object>
-                    </child>
-                  </object>
-                </property>
+          <object class="AdwPreferencesGroup">
+            <property name="margin-top">24</property>
+            <property name="margin-bottom">24</property>
+            <property name="margin-start">24</property>
+            <property name="margin-end">24</property>
+            <property name="valign">start</property>
+            <child>
+              <object class="AdwEntryRow" id="url_row">
+                <property name="title" translatable="yes">URL</property>
+                <property name="input-purpose">url</property>
               </object>
-            </property>
+            </child>
+            <child>
+              <object class="AdwEntryRow" id="name_row">
+                <property name="title" translatable="yes">Name</property>
+              </object>
+            </child>
+            <child>
+              <object class="AdwEntryRow" id="description_row">
+                <property name="title" translatable="yes">Description</property>
+              </object>
+            </child>
+            <child>
+              <object class="TagEntryRow" id="tags_row">
+                <property name="title" translatable="yes">Tags</property>
+              </object>
+            </child>
           </object>
         </property>
       </object>
