@@ -13,5 +13,7 @@
     <file preprocess="xml-stripblanks">views/preferences/preferences.ui</file>
     <file preprocess="xml-stripblanks">views/welcome/welcome.ui</file>
     <file preprocess="xml-stripblanks">views/window/window.ui</file>
+    <file preprocess="xml-stripblanks">widgets/tag_chip/tag_chip.ui</file>
+    <file preprocess="xml-stripblanks">widgets/tag_entry_row/tag_entry_row.ui</file>
   </gresource>
 </gresources>

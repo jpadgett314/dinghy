@@ -24,6 +24,7 @@ mod config;
 mod models;
 mod util;
 mod views;
+mod widgets;
 
 use self::application::DinghyApplication;
 

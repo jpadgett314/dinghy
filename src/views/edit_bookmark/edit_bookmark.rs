@@ -7,6 +7,7 @@ use gtk::{gio, glib};
 
 use crate::api::{BookmarkStorage, BookmarkChanges};
 use crate::models::BookmarkCardModel;
+use crate::widgets::TagEntryRow;
 
 mod imp {
     use super::*;
@@ -26,7 +27,7 @@ mod imp {
         #[template_child]
         pub description_row: TemplateChild<adw::EntryRow>,
         #[template_child]
-        pub tags_row: TemplateChild<adw::EntryRow>,
+        pub tags_row: TemplateChild<TagEntryRow>,
         #[template_child]
         pub save_button: TemplateChild<gtk::Button>,
     }
@@ -38,6 +39,7 @@ mod imp {
         type ParentType = adw::Dialog;
 
         fn class_init(klass: &mut Self::Class) {
+            TagEntryRow::ensure_type();
             klass.bind_template();
             klass.bind_template_instance_callbacks();
         }
@@ -56,7 +58,7 @@ mod imp {
             self.url_row.set_text(&model.url());
             self.name_row.set_text(&model.title());
             self.description_row.set_text(&model.description());
-            self.tags_row.set_text(&model.tag_names().join(Some(" ")));
+            self.tags_row.set_tag_names(model.tag_names());
         }
 
         fn dispose(&self) {
@@ -90,13 +92,14 @@ impl EditBookmarkDialog {
     #[template_callback]
     fn on_save_clicked(&self) {
         let imp = self.imp();
+        imp.tags_row.commit_pending();
 
         let changes = BookmarkChanges {
             id: imp.model.get().unwrap().id(),
             url: Some(imp.url_row.text().to_string()),
             title: Some(imp.name_row.text().to_string()),
             description: Some(imp.description_row.text().to_string()),
-            tag_names: Some(imp.tags_row.text().split_whitespace().map(str::to_owned).collect()),
+            tag_names: Some(imp.tags_row.tag_names().iter().map(|tag| tag.to_string()).collect()),
         };
 
         imp.save_button.set_sensitive(false);

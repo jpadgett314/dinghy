@@ -79,8 +79,8 @@
                       </object>
                     </child>
                     <child>
-                      <object class="AdwEntryRow" id="tags_row">
-                        <property name="title" translatable="yes">Tags (space-separated)</property>
+                      <object class="TagEntryRow" id="tags_row">
+                        <property name="title" translatable="yes">Tags</property>
                       </object>
                     </child>
                   </object>

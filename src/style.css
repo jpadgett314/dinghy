@@ -32,3 +32,33 @@ listview.bookmark-feed > row:focus-visible .bookmark-card {
   margin-bottom: -2px;
 }
 
+.tag-entry-row {
+  padding: 0;
+}
+
+.tag-entry-row > box {
+  border-radius: inherit;
+}
+
+.tag-entry-row > box > row.entry {
+  border-top-left-radius: inherit;
+  border-top-right-radius: inherit;
+}
+
+.tag-entry-row > box > row.entry:last-child {
+  border-bottom-left-radius: inherit;
+  border-bottom-right-radius: inherit;
+}
+
+.tag-chip {
+  background: alpha(currentColor, 0.08);
+  border-radius: 999px;
+  padding: 2px 4px 2px 10px;
+}
+
+.tag-chip button {
+  min-width: 24px;
+  min-height: 24px;
+  padding: 0;
+}
+
