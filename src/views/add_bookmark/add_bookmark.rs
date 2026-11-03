@@ -6,6 +6,7 @@ use gettextrs::gettext;
 use gtk::{gio, glib};
 
 use crate::api::{BookmarkToAdd, BookmarkStorage};
+use crate::widgets::TagEntryRow;
 
 mod imp {
     use super::*;
@@ -23,7 +24,7 @@ mod imp {
         #[template_child]
         pub description_row: TemplateChild<adw::EntryRow>,
         #[template_child]
-        pub tags_row: TemplateChild<adw::EntryRow>,
+        pub tags_row: TemplateChild<TagEntryRow>,
         #[template_child]
         pub create_button: TemplateChild<gtk::Button>,
     }
@@ -81,7 +82,7 @@ impl AddBookmarkDialog {
             url: imp.url_row.text().to_string(),
             title: Some(imp.name_row.text().to_string()),
             description: Some(imp.description_row.text().to_string()),
-            tag_names: Some(imp.tags_row.text().split_whitespace().map(str::to_owned).collect()),
+            tag_names: Some(imp.tags_row.tag_names().iter().map(|tag| tag.to_string()).collect()),
         };
 
         imp.create_button.set_sensitive(false);
