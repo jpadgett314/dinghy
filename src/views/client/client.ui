@@ -3,8 +3,9 @@
   <requires lib="gtk" version="4.0"/>
   <requires lib="Adw" version="1.0"/>
   <template class="DinghyClient" parent="GtkBox">
-    <signal name="notify::connection" handler="on_dependencies_changed"/>
-    <signal name="notify::settings" handler="on_dependencies_changed"/>
+    <binding name="toolbar-model">
+      <lookup name="toolbar-model" type="BookmarksPage">bookmarks</lookup>
+    </binding>
     <property name="orientation">vertical</property>
     <child>
       <object class="AdwToolbarView" id="toolbar_view">
@@ -12,15 +13,14 @@
         <child type="top">
           <object class="AdwHeaderBar">
             <property name="title-widget">
-              <object class="AdwWindowTitle" id="window_title_widget">
-                <property name="title">Dinghy</property>
-                <property name="subtitle"></property>
+              <object class="AdwWindowTitle">
+                <property name="title" translatable="yes">Dinghy</property>
               </object>
             </property>
             <child type="start">
               <object class="GtkButton">
                 <property name="icon-name">list-add-symbolic</property>
-                <property name="action-name">client.add-bookmark</property>
+                <property name="action-name">bookmarks.add-dialog</property>
                 <property name="tooltip-text" translatable="yes">Add Bookmark</property>
               </object>
             </child>
@@ -35,14 +35,13 @@
             <child type="end">
               <object class="GtkButton">
                 <property name="icon-name">view-refresh-symbolic</property>
-                <property name="action-name">client.refresh-bookmarks</property>
+                <property name="action-name">bookmarks.refresh</property>
                 <property name="tooltip-text" translatable="yes">Refresh Bookmarks</property>
               </object>
             </child>
             <child type="end">
               <object class="GtkToggleButton" id="search_toggle_button">
                 <property name="icon-name">system-search-symbolic</property>
-                <property name="action-name">client.toggle-search</property>
                 <property name="tooltip-text" translatable="yes">Search</property>
               </object>
             </child>
@@ -55,17 +54,34 @@
             <child>
               <object class="GtkSearchEntry" id="search_entry">
                 <property name="search-delay">100</property>
-                <signal name="changed" handler="on_search_changed" swapped="yes"/>
               </object>
             </child>
           </object>
         </child>
         <property name="content">
-          <object class="BookmarkFeed" id="bookmark_feed_widget"/>
+          <object class="AdwViewStack" id="view_stack">
+            <child>
+              <object class="AdwViewStackPage">
+                <property name="name">bookmarks</property>
+                <property name="title" translatable="yes">Bookmarks</property>
+                <property name="child">
+                  <object class="BookmarksPage" id="bookmarks">
+                    <property name="connection" bind-source="DinghyClient" bind-property="connection" bind-flags="sync-create"/>
+                    <property name="settings" bind-source="DinghyClient" bind-property="settings" bind-flags="sync-create"/>
+                  </object>
+                </property>
+              </object>
+            </child>
+          </object>
         </property>
       </object>
     </child>
   </template>
+  <object class="GBindingGroup" id="toolbar_bindings">
+    <binding name="source">
+      <lookup name="toolbar-model">DinghyClient</lookup>
+    </binding>
+  </object>
   <menu id="primary_menu">
     <section>
       <item>

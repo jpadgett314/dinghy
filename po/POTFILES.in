@@ -6,7 +6,6 @@ data/io.github.jpadgett314.Dinghy.gschema.xml
 src/views/add_bookmark/add_bookmark.rs
 src/views/add_bookmark/add_bookmark.ui
 src/views/bookmark_feed/bookmark_feed.ui
-src/views/client/client.rs
 src/views/client/client.ui
 src/views/connect/connect.ui
 src/views/edit_bookmark/edit_bookmark.ui

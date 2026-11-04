@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <template class="BookmarksPage" parent="GtkBox">
+    <signal name="notify::connection" handler="on_dependencies_changed"/>
+    <signal name="notify::settings" handler="on_dependencies_changed"/>
+    <property name="orientation">vertical</property>
+    <property name="toolbar-model">
+      <object class="ToolbarModel">
+        <signal name="notify::query" handler="on_query_changed" swapped="yes"/>
+      </object>
+    </property>
+    <child>
+      <object class="BookmarkFeed" id="bookmark_feed_widget"/>
+    </child>
+  </template>
+</interface>

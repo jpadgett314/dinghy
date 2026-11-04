@@ -7,6 +7,7 @@
     <file preprocess="xml-stripblanks">views/bookmark_card/bookmark_card.ui</file>
     <file preprocess="xml-stripblanks">views/bookmark_feed/bookmark_feed.ui</file>
     <file preprocess="xml-stripblanks">views/bookmark_tag/bookmark_tag.ui</file>
+    <file preprocess="xml-stripblanks">views/bookmarks_page/bookmarks_page.ui</file>
     <file preprocess="xml-stripblanks">views/client/client.ui</file>
     <file preprocess="xml-stripblanks">views/connect/connect.ui</file>
     <file preprocess="xml-stripblanks">views/edit_bookmark/edit_bookmark.ui</file>

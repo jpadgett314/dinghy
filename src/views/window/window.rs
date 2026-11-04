@@ -99,7 +99,7 @@ impl DinghyWindow {
 
         self.add_action_entries([toast_action]);
 
-        self.insert_action_group("client", self.imp().client.actions().as_ref());
+        self.insert_action_group("bookmarks", Some(&self.imp().client.bookmarks().actions()));
     }
 
     fn on_toast_action(&self, param: Option<&glib::Variant>) {

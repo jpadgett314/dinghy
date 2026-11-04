@@ -2,12 +2,11 @@ use std::cell::RefCell;
 
 use adw::prelude::*;
 use adw::subclass::prelude::*;
-use gettextrs::{gettext, ngettext};
-use gtk::{gio, glib, SearchBar, SearchEntry, ToggleButton};
+use gtk::{gio, glib};
 
-use crate::api::{BookmarkStorage, Connection};
-use crate::models::BookmarkFeedModel;
-use crate::views::{AddBookmarkDialog, BookmarkFeed, EditBookmarkDialog};
+use crate::api::Connection;
+use crate::models::ToolbarModel;
+use crate::views::BookmarksPage;
 
 mod imp {
     use super::*;
@@ -16,26 +15,22 @@ mod imp {
     #[properties(wrapper_type = super::DinghyClient)]
     #[template(resource = "/io/github/jpadgett314/Dinghy/views/client/client.ui")]
     pub struct DinghyClient {
-        #[property(get, nullable)]
-        pub actions: RefCell<Option<gio::SimpleActionGroup>>,
         #[property(get, set, nullable)]
         pub connection: RefCell<Option<Connection>>,
         #[property(get, set, nullable)]
         pub settings: RefCell<Option<gio::Settings>>,
-        #[property(get, nullable)]
-        pub bookmark_storage: RefCell<Option<BookmarkStorage>>,
-        #[property(get, nullable)]
-        pub bookmark_feed_model: RefCell<Option<BookmarkFeedModel>>,
+        #[property(get, set, nullable)]
+        pub toolbar_model: RefCell<Option<ToolbarModel>>,
         #[template_child]
-        pub bookmark_feed_widget: TemplateChild<BookmarkFeed>,
+        pub toolbar_bindings: TemplateChild<glib::BindingGroup>,
         #[template_child]
-        pub search_bar: TemplateChild<SearchBar>,
+        pub bookmarks: TemplateChild<BookmarksPage>,
         #[template_child]
-        pub search_entry: TemplateChild<SearchEntry>,
+        pub search_entry: TemplateChild<gtk::SearchEntry>,
         #[template_child]
-        pub search_toggle_button: TemplateChild<ToggleButton>,
+        pub search_bar: TemplateChild<gtk::SearchBar>,
         #[template_child]
-        pub window_title_widget: TemplateChild<adw::WindowTitle>,
+        pub search_toggle_button: TemplateChild<gtk::ToggleButton>,
     }
 
     #[glib::object_subclass]
@@ -45,9 +40,9 @@ mod imp {
         type ParentType = gtk::Box;
 
         fn class_init(klass: &mut Self::Class) {
-            BookmarkFeed::ensure_type();
+            glib::BindingGroup::ensure_type();
+            BookmarksPage::ensure_type();
             klass.bind_template();
-            klass.bind_template_instance_callbacks();
         }
 
         fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
@@ -59,7 +54,19 @@ mod imp {
     impl ObjectImpl for DinghyClient {
         fn constructed(&self) {
             self.parent_constructed();
-            self.obj().setup_gactions();
+
+            self.toolbar_bindings
+                .bind("query", &*self.search_entry, "text")
+                .bidirectional()
+                .build();
+            self.toolbar_bindings
+                .bind("searchbar-open", &*self.search_toggle_button, "active")
+                .bidirectional()
+                .build();
+            self.toolbar_bindings
+                .bind("searchbar-open", &*self.search_bar, "search-mode-enabled")
+                .bidirectional()
+                .build();
         }
 
         fn dispose(&self) {
@@ -77,134 +84,12 @@ glib::wrapper! {
         @implements gtk::Accessible, gtk::Buildable, gtk::ConstraintTarget, gtk::Orientable;
 }
 
-#[gtk::template_callbacks]
 impl DinghyClient {
-    fn setup_gactions(&self) {
-        type ActionBuilder = gio::ActionEntryBuilder::<gio::SimpleActionGroup>;
-
-        let actions = &self.imp().actions;
-        let client1 = self.clone();
-        let client2 = self.clone();
-        let client3 = self.clone();
-        let client4 = self.clone();
-        let client5 = self.clone();
-        let entries = [
-            ActionBuilder::new("add-bookmark")
-                .activate(move |_, _, _| client1.on_add_bookmark_action())
-                .build(),
-            ActionBuilder::new("edit-bookmark")
-                .parameter_type(Some(glib::VariantTy::INT32))
-                .activate(move |_, _, param| client2.on_edit_bookmark_action(param))
-                .build(),
-            ActionBuilder::new("refresh-bookmarks")
-                .activate(move |_, _, _| client3.refresh())
-                .build(),
-            ActionBuilder::new("toggle-search")
-                .activate(move |_, _, _| client4.on_toggle_search_action())
-                .build(),
-            ActionBuilder::new("search")
-                .parameter_type(Some(glib::VariantTy::STRING))
-                .activate(move |_, _, param| client5.on_search_action(param))
-                .build(),
-        ];
-
-        actions.replace(Some(gio::SimpleActionGroup::new()));
-
-        actions.borrow().as_ref().unwrap().add_action_entries(entries);
-    }
-
-    fn on_add_bookmark_action(&self) {
-        let Some(storage) = self.bookmark_storage() else { return };
-
-        AddBookmarkDialog::new(&storage).present(Some(self));
-    }
-
-    fn on_edit_bookmark_action(&self, param: Option<&glib::Variant>) {
-        let id = param.unwrap().get::<i32>().unwrap();
-        let Some(feed) = self.bookmark_feed_model() else { return };
-        let Some(storage) = self.bookmark_storage() else { return };
-        let Some(model) = feed.find_by_id(id) else { return };
-
-        EditBookmarkDialog::new(&storage, &model).present(Some(self));
-    }
-
-    fn on_toggle_search_action(&self) {
-        let imp = self.imp();
-        let active = !imp.search_toggle_button.is_active();
-        imp.search_toggle_button.set_active(active);
-        imp.search_bar.set_search_mode(active);
-    }
-
-    fn on_search_action(&self, param: Option<&glib::Variant>) {
-        let query = param.unwrap().get::<String>().unwrap();
-
-        let Some(pagination) = self.bookmark_feed_model() else { return };
-
-        let imp = self.imp();
-        imp.search_toggle_button.set_active(true);
-        imp.search_bar.set_search_mode(true);
-        imp.search_entry.set_text(&query);
-        pagination.fetch_query(query);
-    }
-
-    #[template_callback]
-    fn on_dependencies_changed(&self) {
-        if self.bookmark_feed_model().is_some() {
-            return;
-        }
-        let (Some(connection), Some(settings)) = (self.connection(), self.settings()) else {
-            return;
-        };
-
-        let storage = BookmarkStorage::new(&connection);
-        let pagination = BookmarkFeedModel::new(storage.clone(), settings);
-        self.imp().bookmark_storage.replace(Some(storage));
-        self.imp().bookmark_feed_model.replace(Some(pagination.clone()));
-        self.imp().bookmark_feed_widget.set_model(pagination);
-
-        self.refresh();
-    }
-
-    #[template_callback]
-    fn on_search_changed(&self) {
-        self.refresh();
-    }
-
-    fn refresh_bookmarks(&self) {
-        if let Some(pagination) = self.bookmark_feed_model() {
-            pagination.fetch_query(self.imp().search_entry.text().to_string());
-        }
-    }
-
-    fn refresh_title(&self) {
-        let (Some(settings), Some(connection)) = (self.settings(), self.connection()) else {
-            return;
-        };
-
-        let title: String = settings.get("api-url");
-        let title_widget = self.imp().window_title_widget.get();
-
-        glib::spawn_future_local(async move {
-            let reply =
-                gio::spawn_blocking(move || connection.stats())
-                    .await;
-
-            let count = match reply {
-                Err(_) => gettext("Not available"),
-                Ok(None) => gettext("Not available"),
-                Ok(Some(data)) => match data.bookmark_count {
-                    0 => gettext("No bookmarks"),
-                    n => ngettext("{} bookmark", "{} bookmarks", n as u32).replace("{}", &n.to_string()),
-                }
-            };
-
-            title_widget.set_title(&title);
-            title_widget.set_subtitle(&count);
-        });
+    pub fn bookmarks(&self) -> BookmarksPage {
+        self.imp().bookmarks.get()
     }
 
     pub fn refresh(&self) {
-        self.refresh_bookmarks();
-        self.refresh_title();
+        let _ = self.activate_action("bookmarks.refresh", None);
     }
 }
