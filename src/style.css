@@ -36,13 +36,35 @@ listview.bookmark-feed > row:focus-visible .bookmark-card {
   padding: 0;
 }
 
+.tag-entry-row:focus-within {
+  outline: 2px solid alpha(var(--accent-color), 0.5);
+  outline-offset: -1px;
+}
+
+.tag-entry-row:hover:not(:focus-within):not(:disabled) {
+  background-image: image(alpha(currentColor, 0.03));
+}
+
+@media (prefers-contrast: more) {
+  .tag-entry-row:focus-within {
+    outline-color: alpha(var(--accent-color), 0.8);
+  }
+}
+
 .tag-entry-row > box {
   border-radius: inherit;
 }
 
 .tag-entry-row > box > row.entry {
+  outline: none;
   border-top-left-radius: inherit;
   border-top-right-radius: inherit;
+}
+
+.tag-entry-row > box > row.entry,
+.tag-entry-row > box > row.entry:hover,
+.tag-entry-row > box > row.entry:active {
+  background: none;
 }
 
 .tag-entry-row > box > row.entry:last-child {
@@ -61,4 +83,3 @@ listview.bookmark-feed > row:focus-visible .bookmark-card {
   min-height: 24px;
   padding: 0;
 }
-
