@@ -53,13 +53,13 @@ mod imp {
             }
         }
 
-        fn set_tag_names(&self, tag_names: glib::StrV) {
+        fn set_tag_names(&self, names: glib::StrV) {
             self.remove_all_tags();
-            for tag_name in &tag_names {
-                let display_name = format!("{}", tag_name);
+            for name in names.iter().rev() {
+                let display_name = format!("{}", name);
                 self.tags_box.prepend(&BookmarkTag::new(&display_name));
             }
-            self.tag_names.replace(tag_names);
+            self.tag_names.replace(names);
         }
 
         fn set_favicon(&self, favicon: Option<gdk::Paintable>) {
