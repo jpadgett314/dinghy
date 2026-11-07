@@ -7,11 +7,6 @@ use linkding::{LinkDingClient, LinkDingError, ListBookmarksArgs};
 
 use crate::api::ApiError;
 
-#[derive(Debug, Default, Copy, Clone)]
-pub struct CollectionStats {
-    pub bookmark_count: i32,
-}
-
 #[derive(Debug, Default, Copy, Clone, PartialEq, Eq, glib::Enum)]
 #[enum_type(name = "ConnectionStatus")]
 pub enum ConnectionStatus {
@@ -102,29 +97,6 @@ impl Connection {
         };
 
         let _ = self.use_api(|api| api.list_bookmarks(req));
-    }
-
-    pub fn stats(&self) -> Option<CollectionStats> {
-        let req = ListBookmarksArgs {
-            query: Some(String::from("")),
-            limit: Some(0),
-            offset: Some(0),
-            modified_since: None,
-        };
-
-        let res = self.use_api(|api| api.list_bookmarks(req));
-
-        match res {
-            Ok(data) => {
-                let stats = CollectionStats { bookmark_count: data.count };
-                Some(stats)
-            }
-            Err(ApiError::Uninitialized) => None,
-            Err(e) => {
-                eprintln!("API error: {e}");
-                None
-            }
-        }
     }
 
     pub fn use_api<R>(&self, operation: impl FnOnce(&LinkDingClient) -> Result<R, LinkDingError>) -> Result<R, ApiError> {
