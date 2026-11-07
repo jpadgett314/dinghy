@@ -116,6 +116,7 @@ impl BookmarksPage {
                 ))
                 .build(),
         ];
+
         self.actions().add_action_entries(entries);
     }
 

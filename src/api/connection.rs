@@ -3,17 +3,21 @@ use std::sync::{Arc, RwLock};
 use adw::prelude::*;
 use adw::subclass::prelude::*;
 use gtk::{gio, glib};
-use linkding::{LinkDingClient, ListBookmarksArgs};
+use linkding::{LinkDingClient, LinkDingError, ListBookmarksArgs};
+
+use crate::api::ApiError;
 
 #[derive(Debug, Default, Copy, Clone)]
 pub struct CollectionStats {
     pub bookmark_count: i32,
 }
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Default, Copy, Clone, PartialEq, Eq, glib::Enum)]
+#[enum_type(name = "ConnectionStatus")]
 pub enum ConnectionStatus {
-    Connected,
+    #[default]
     Disconnected,
+    Connected,
 }
 
 mod imp {
@@ -27,6 +31,8 @@ mod imp {
         pub url: Arc<RwLock<Option<String>>>,
         #[property(get, set = Self::set_token, nullable)]
         pub token: Arc<RwLock<Option<String>>>,
+        #[property(get, set, builder(ConnectionStatus::default()))]
+        pub status: Arc<RwLock<ConnectionStatus>>,
     }
 
     impl Connection {
@@ -55,10 +61,6 @@ mod imp {
         }
     }
 
-    impl Connection {
-
-    }
-
     #[glib::object_subclass]
     impl ObjectSubclass for Connection {
         const NAME: &'static str = "DinghyConnection";
@@ -82,16 +84,6 @@ impl Connection {
             .build()
     }
 
-    pub fn from(settings: &gio::Settings) -> Self {
-        let object: Self = glib::Object::builder()
-            .property("url", settings.get::<String>("api-url"))
-            .property("token", settings.get::<String>("api-token"))
-            .build();
-
-        object.bind(settings);
-        object
-    }
-
     pub fn bind(&self, settings: &gio::Settings) {
         settings
             .bind("api-url", self, "url")
@@ -101,32 +93,15 @@ impl Connection {
             .build();
     }
 
-    pub fn use_api<R>(&self, operation: impl FnOnce(&LinkDingClient) -> R) -> Option<R> {
-        // `LinkDingClient` is a blocking synchronous API!!
-        assert!(
-            !gtk::is_initialized_main_thread(),
-            "Connection::use_api() must not run on the GTK main thread."
-        );
-
-        let api = self.imp().api.read().unwrap().clone()?;
-
-        Some(operation(&api))
-    }
-
-    pub fn status(&self) -> ConnectionStatus {
+    pub fn poll(&self) {
         let req = ListBookmarksArgs {
-            query: Some(String::from("")),
+            query: Some(String::from("POLL")),
             limit: Some(0),
             offset: Some(0),
             modified_since: None,
         };
 
-        let res = self.use_api(|api| api.list_bookmarks(req));
-
-        match res {
-            Some(Ok(_)) => ConnectionStatus::Connected,
-            _ => ConnectionStatus::Disconnected,
-        }
+        let _ = self.use_api(|api| api.list_bookmarks(req));
     }
 
     pub fn stats(&self) -> Option<CollectionStats> {
@@ -137,18 +112,53 @@ impl Connection {
             modified_since: None,
         };
 
-        let res = self.use_api(|api| api.list_bookmarks(req))?;
+        let res = self.use_api(|api| api.list_bookmarks(req));
 
         match res {
             Ok(data) => {
                 let stats = CollectionStats { bookmark_count: data.count };
                 Some(stats)
             }
+            Err(ApiError::Uninitialized) => None,
             Err(e) => {
                 eprintln!("API error: {e}");
                 None
             }
         }
+    }
+
+    pub fn use_api<R>(&self, operation: impl FnOnce(&LinkDingClient) -> Result<R, LinkDingError>) -> Result<R, ApiError> {
+        // `LinkDingClient` is a blocking synchronous API!!
+        assert!(
+            !gtk::is_initialized_main_thread(),
+            "Connection::use_api() must not run on the GTK main thread."
+        );
+
+        let api = self.imp().api.read().unwrap().clone().ok_or(ApiError::Uninitialized)?;
+        let ret = operation(&api).map_err(ApiError::from);
+
+        let new_status = match ret {
+            Err(ApiError::RequestFailed(_)) => ConnectionStatus::Connected,
+            Err(_) => ConnectionStatus::Disconnected,
+            Ok(_) => ConnectionStatus::Connected,
+        };
+
+        self.set_status(new_status);
+
+        ret
+    }
+}
+
+impl From<&gio::Settings> for Connection {
+    fn from(settings: &gio::Settings) -> Self {
+        let object: Self = glib::Object::builder()
+            .property("url", settings.get::<String>("api-url"))
+            .property("token", settings.get::<String>("api-token"))
+            .build();
+
+        object.bind(settings);
+        object.poll();
+        object
     }
 }
 
