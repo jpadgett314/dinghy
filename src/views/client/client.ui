@@ -59,15 +59,53 @@
           </object>
         </child>
         <property name="content">
-          <object class="AdwViewStack" id="view_stack">
+          <object class="GtkStack" id="status_stack">
+            <binding name="visible-child-name">
+              <closure type="gchararray" function="get_status_page">
+                <lookup name="status" type="DinghyConnection">
+                  <lookup name="connection">DinghyClient</lookup>
+                </lookup>
+              </closure>
+            </binding>
             <child>
-              <object class="AdwViewStackPage">
-                <property name="name">bookmarks</property>
-                <property name="title" translatable="yes">Bookmarks</property>
+              <object class="GtkStackPage">
+                <property name="name">server-unavailable</property>
                 <property name="child">
-                  <object class="BookmarksPage" id="bookmarks">
-                    <property name="connection" bind-source="DinghyClient" bind-property="connection" bind-flags="sync-create"/>
-                    <property name="settings" bind-source="DinghyClient" bind-property="settings" bind-flags="sync-create"/>
+                  <object class="AdwStatusPage">
+                    <property name="icon-name">network-offline-symbolic</property>
+                    <property name="title" translatable="yes">Server Unavailable</property>
+                    <property name="child">
+                      <object class="GtkButton">
+                        <property name="label" translatable="yes">Retry</property>
+                        <property name="halign">center</property>
+                        <signal name="clicked" handler="on_retry_clicked" swapped="yes"/>
+                        <style>
+                          <class name="suggested-action"/>
+                          <class name="pill"/>
+                        </style>
+                      </object>
+                    </property>
+                  </object>
+                </property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkStackPage">
+                <property name="name">content</property>
+                <property name="child">
+                  <object class="AdwViewStack" id="view_stack">
+                    <child>
+                      <object class="AdwViewStackPage">
+                        <property name="name">bookmarks</property>
+                        <property name="title" translatable="yes">Bookmarks</property>
+                        <property name="child">
+                          <object class="BookmarksPage" id="bookmarks">
+                            <property name="connection" bind-source="DinghyClient" bind-property="connection" bind-flags="sync-create"/>
+                            <property name="settings" bind-source="DinghyClient" bind-property="settings" bind-flags="sync-create"/>
+                          </object>
+                        </property>
+                      </object>
+                    </child>
                   </object>
                 </property>
               </object>

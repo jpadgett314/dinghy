@@ -4,7 +4,7 @@ use adw::prelude::*;
 use adw::subclass::prelude::*;
 use gtk::{gio, glib};
 
-use crate::api::Connection;
+use crate::api::{Connection, ConnectionStatus};
 use crate::models::ToolbarModel;
 use crate::views::BookmarksPage;
 
@@ -31,6 +31,8 @@ mod imp {
         pub search_bar: TemplateChild<gtk::SearchBar>,
         #[template_child]
         pub search_toggle_button: TemplateChild<gtk::ToggleButton>,
+        #[template_child]
+        pub status_stack: TemplateChild<gtk::Stack>,
     }
 
     #[glib::object_subclass]
@@ -43,6 +45,7 @@ mod imp {
             glib::BindingGroup::ensure_type();
             BookmarksPage::ensure_type();
             klass.bind_template();
+            klass.bind_template_instance_callbacks();
         }
 
         fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
@@ -84,7 +87,22 @@ glib::wrapper! {
         @implements gtk::Accessible, gtk::Buildable, gtk::ConstraintTarget, gtk::Orientable;
 }
 
+#[gtk::template_callbacks]
 impl DinghyClient {
+    #[template_callback(function)]
+    fn get_status_page(status: ConnectionStatus) -> &'static str {
+        match status {
+            ConnectionStatus::Connected => "content",
+            ConnectionStatus::Disconnected => "server-unavailable",
+        }
+    }
+
+    #[template_callback]
+    fn on_retry_clicked(&self) {
+        self.imp().status_stack.set_visible_child_name("content");
+        self.refresh();
+    }
+
     pub fn bookmarks(&self) -> BookmarksPage {
         self.imp().bookmarks.get()
     }

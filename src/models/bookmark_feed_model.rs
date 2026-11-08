@@ -33,10 +33,10 @@ mod imp {
         pub query: RefCell<String>,
         #[property(get)]
         pub query_page: Cell<i32>,
-        #[property(get, builder(BookmarkFeedStatus::default()))]
-        pub status: Cell<BookmarkFeedStatus>,
         #[property(get, set)]
         pub epoch_counter: OnceCell<EpochCounter>,
+        #[property(get, builder(BookmarkFeedStatus::default()))]
+        pub status: Cell<BookmarkFeedStatus>,
     }
 
     #[glib::object_subclass]

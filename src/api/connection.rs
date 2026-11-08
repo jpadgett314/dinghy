@@ -11,8 +11,8 @@ use crate::api::ApiError;
 #[enum_type(name = "ConnectionStatus")]
 pub enum ConnectionStatus {
     #[default]
-    Disconnected,
     Connected,
+    Disconnected,
 }
 
 mod imp {
@@ -115,7 +115,13 @@ impl Connection {
             Ok(_) => ConnectionStatus::Connected,
         };
 
-        self.set_status(new_status);
+        glib::idle_add_once(glib::clone!(
+            #[weak(rename_to = connection)]
+            self.clone(),
+            move || {
+                connection.set_status(new_status);
+            }
+        ));
 
         ret
     }
@@ -139,4 +145,3 @@ impl Default for Connection {
         glib::Object::new()
     }
 }
-
