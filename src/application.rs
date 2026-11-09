@@ -63,6 +63,7 @@ mod imp {
             let obj = self.obj();
             obj.setup_gactions();
             obj.set_accels_for_action("app.quit", &["<control>q"]);
+            obj.set_accels_for_action("client.refresh", &["<control>r"]);
         }
     }
 

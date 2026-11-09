@@ -108,7 +108,7 @@ impl BookmarkCard {
     fn on_edit_clicked(&self) {
         let Some(model) = self.model() else { return };
         let id = model.id().to_variant();
-        let _ = self.activate_action("bookmarks.edit-dialog", Some(&id));
+        let _ = self.activate_action("bookmarks.open-edit-dialog", Some(&id));
     }
 }
 

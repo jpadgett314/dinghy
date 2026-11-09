@@ -6,6 +6,7 @@ use gtk::{gio, glib};
 
 use crate::api::Connection;
 use crate::models::ToolbarModel;
+use crate::util::action_entry0;
 use crate::views::BookmarksPage;
 
 mod imp {
@@ -15,6 +16,8 @@ mod imp {
     #[properties(wrapper_type = super::DinghyClient)]
     #[template(resource = "/io/github/jpadgett314/Dinghy/views/client/client.ui")]
     pub struct DinghyClient {
+        #[property(get)]
+        pub actions: gio::SimpleActionGroup,
         #[property(get, set, nullable)]
         pub connection: RefCell<Option<Connection>>,
         #[property(get, set, nullable)]
@@ -57,6 +60,7 @@ mod imp {
     impl ObjectImpl for DinghyClient {
         fn constructed(&self) {
             self.parent_constructed();
+            self.obj().setup_gactions();
 
             self.toolbar_bindings
                 .bind("query", &*self.search_entry, "text")
@@ -89,6 +93,12 @@ glib::wrapper! {
 
 #[gtk::template_callbacks]
 impl DinghyClient {
+    fn setup_gactions(&self) {
+        self.actions().add_action_entries([
+            action_entry0(self, "refresh", Self::refresh),
+        ]);
+    }
+
     #[template_callback(function)]
     fn get_status_page(available: bool) -> &'static str {
         match available {
@@ -108,6 +118,6 @@ impl DinghyClient {
     }
 
     pub fn refresh(&self) {
-        let _ = self.activate_action("bookmarks.refresh", None);
+        self.bookmarks().refresh();
     }
 }

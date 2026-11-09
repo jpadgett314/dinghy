@@ -99,7 +99,7 @@ impl AddBookmarkDialog {
                 gettext("Failed to create bookmark")
             };
             let _ = obj.activate_action("win.toast", Some(&message.to_variant()));
-            let _ = obj.activate_action("bookmarks.refresh", None);
+            let _ = obj.activate_action("client.refresh", None);
             obj.imp().create_button.set_sensitive(true);
             if success {
                 obj.close();

@@ -6,6 +6,7 @@ use gtk::{gio, glib};
 
 use crate::api::{BookmarkStorage, Connection};
 use crate::models::{BookmarkFeedModel, ToolbarModel};
+use crate::util::{action_entry0, action_entry1};
 use crate::views::{AddBookmarkDialog, BookmarkFeed, EditBookmarkDialog};
 
 mod imp {
@@ -74,60 +75,36 @@ glib::wrapper! {
 #[gtk::template_callbacks]
 impl BookmarksPage {
     fn setup_gactions(&self) {
-        type ActionBuilder = gio::ActionEntryBuilder<gio::SimpleActionGroup>;
-
         let entries = [
-            ActionBuilder::new("add-dialog")
-                .activate(glib::clone!(
-                    #[weak(rename_to = page)]
-                    self,
-                    move |_, _, _| {
-                        page.on_add_bookmark_action();
-                    }
-                ))
-                .build(),
-            ActionBuilder::new("edit-dialog")
-                .parameter_type(Some(glib::VariantTy::INT32))
-                .activate(glib::clone!(
-                    #[weak(rename_to = page)]
-                    self,
-                    move |_, _, param| {
-                        page.on_edit_bookmark_action(param);
-                    }
-                ))
-                .build(),
-            ActionBuilder::new("refresh")
-                .activate(glib::clone!(
-                    #[weak(rename_to = page)]
-                    self,
-                    move |_, _, _| {
-                        page.refresh();
-                    }
-                ))
-                .build(),
-            ActionBuilder::new("search")
-                .parameter_type(Some(glib::VariantTy::STRING))
-                .activate(glib::clone!(
-                    #[weak(rename_to = page)]
-                    self,
-                    move |_, _, param| {
-                        page.on_search_bookmarks_action(param);
-                    }
-                ))
-                .build(),
+            action_entry0(
+                self,
+                "open-add-dialog",
+                Self::on_open_add_dialog_action,
+            ),
+            action_entry1(
+                self,
+                "search",
+                Some(glib::VariantTy::STRING),
+                Self::on_search_bookmarks_action,
+            ),
+            action_entry1(
+                self,
+                "open-edit-dialog",
+                Some(glib::VariantTy::INT32),
+                Self::on_open_edit_dialog_action,
+            ),
         ];
-
         self.actions().add_action_entries(entries);
     }
 
-    fn on_add_bookmark_action(&self) {
+    fn on_open_add_dialog_action(&self) {
         let Some(storage) = self.bookmark_storage() else {
             return;
         };
         AddBookmarkDialog::new(&storage).present(Some(self));
     }
 
-    fn on_edit_bookmark_action(&self, param: Option<&glib::Variant>) {
+    fn on_open_edit_dialog_action(&self, param: Option<&glib::Variant>) {
         let id = param.unwrap().get::<i32>().unwrap();
         let Some(feed) = self.bookmark_feed_model() else {
             return;
@@ -168,7 +145,7 @@ impl BookmarksPage {
         self.refresh();
     }
 
-    fn refresh(&self) {
+    pub fn refresh(&self) {
         if let Some(feed) = self.bookmark_feed_model() {
             feed.fetch_query(self.toolbar_model().query());
         }

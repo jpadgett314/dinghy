@@ -99,6 +99,7 @@ impl DinghyWindow {
 
         self.add_action_entries([toast_action]);
 
+        self.insert_action_group("client", Some(&self.imp().client.actions()));
         self.insert_action_group("bookmarks", Some(&self.imp().client.bookmarks().actions()));
     }
 

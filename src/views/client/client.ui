@@ -20,7 +20,7 @@
             <child type="start">
               <object class="GtkButton">
                 <property name="icon-name">list-add-symbolic</property>
-                <property name="action-name">bookmarks.add-dialog</property>
+                <property name="action-name">bookmarks.open-add-dialog</property>
                 <property name="tooltip-text" translatable="yes">Add Bookmark</property>
                 <binding name="sensitive">
                   <lookup name="available" type="DinghyConnection">
@@ -40,7 +40,7 @@
             <child type="end">
               <object class="GtkButton">
                 <property name="icon-name">view-refresh-symbolic</property>
-                <property name="action-name">bookmarks.refresh</property>
+                <property name="action-name">client.refresh</property>
                 <property name="tooltip-text" translatable="yes">Refresh Bookmarks</property>
               </object>
             </child>
@@ -137,6 +137,12 @@
     </binding>
   </object>
   <menu id="primary_menu">
+    <section>
+      <item>
+        <attribute name="label" translatable="yes">_Refresh</attribute>
+        <attribute name="action">client.refresh</attribute>
+      </item>
+    </section>
     <section>
       <item>
         <attribute name="label" translatable="yes">_Preferences</attribute>
