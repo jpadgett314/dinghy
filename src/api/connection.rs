@@ -7,14 +7,6 @@ use linkding::{LinkDingClient, LinkDingError, ListBookmarksArgs};
 
 use crate::api::ApiError;
 
-#[derive(Debug, Default, Copy, Clone, PartialEq, Eq, glib::Enum)]
-#[enum_type(name = "ConnectionStatus")]
-pub enum ConnectionStatus {
-    #[default]
-    Connected,
-    Disconnected,
-}
-
 mod imp {
     use super::*;
 
@@ -28,8 +20,6 @@ mod imp {
         pub url: Arc<RwLock<Option<String>>>,
         #[property(get, set = Self::set_token, nullable)]
         pub token: Arc<RwLock<Option<String>>>,
-        #[property(get, set, builder(ConnectionStatus::default()))]
-        pub status: Arc<RwLock<ConnectionStatus>>,
     }
 
     impl Connection {
@@ -101,28 +91,39 @@ impl Connection {
         let _ = self.use_api(|api| api.list_bookmarks(req));
     }
 
-    pub fn use_api<R>(&self, operation: impl FnOnce(&LinkDingClient) -> Result<R, LinkDingError>) -> Result<R, ApiError> {
+    pub fn use_api<R>(&self, operation: impl FnOnce(&LinkDingClient) -> Result<R, LinkDingError>) -> Result<R, LinkDingError> {
         // `LinkDingClient` is a blocking synchronous API!!
         assert!(
             !gtk::is_initialized_main_thread(),
             "Connection::use_api() must not run on the GTK main thread."
         );
 
-        let api = self.imp().api.read().unwrap().clone().ok_or(ApiError::Uninitialized)?;
-        let ret = operation(&api).map_err(ApiError::from);
+        let api = self
+            .imp()
+            .api
+            .read()
+            .unwrap()
+            .clone()
+            .expect("LinkDingClient should be initialized.");
 
-        let new_status = match ret {
-            Err(ApiError::RequestFailed(_)) => ConnectionStatus::Connected,
-            Err(_) => ConnectionStatus::Disconnected,
-            Ok(_) => ConnectionStatus::Connected,
+        let ret = operation(&api);
+
+        let err = ret.as_ref().map_err(|e| {
+            eprintln!("API error: {e}");
+            ApiError::from(e)
+        });
+
+        let new_status = match err {
+            Err(ApiError::RequestFailed) => true,
+            Err(_) => false,
+            Ok(_) => true,
         };
 
         glib::idle_add_once(glib::clone!(
             #[weak(rename_to = connection)]
             self.clone(),
             move || {
-                connection.set_available(new_status == ConnectionStatus::Connected);
-                connection.set_status(new_status);
+                connection.set_available(new_status);
             }
         ));
 

@@ -1,7 +1,7 @@
 use gtk::glib;
 use linkding::ListBookmarksArgs;
 
-use crate::api::{to_create_req, to_internal, to_update_req, ApiError, Bookmark, BookmarkChanges, BookmarkToAdd, Connection};
+use crate::api::{to_create_req, to_internal, to_update_req, Bookmark, BookmarkChanges, BookmarkToAdd, Connection};
 
 #[derive(Debug, Default, Clone, glib::Boxed)]
 #[boxed_type(name = "DinghyBookmarkStorage", nullable)]
@@ -28,11 +28,7 @@ impl BookmarkStorage {
 
         match res {
             Ok(data) => data.results.iter().map(to_internal).collect(),
-            Err(ApiError::Uninitialized) => vec![],
-            Err(e) => {
-                eprintln!("API error: {e}");
-                vec![]
-            }
+            Err(_) => vec![],
         }
     }
 
@@ -43,11 +39,7 @@ impl BookmarkStorage {
 
         match res {
             Ok(data) => Some(to_internal(&data)),
-            Err(ApiError::Uninitialized) => None,
-            Err(e) => {
-                eprintln!("API error: {e}");
-                None
-            },
+            Err(_) => None,
         }
     }
 
@@ -58,11 +50,7 @@ impl BookmarkStorage {
 
         match res {
             Ok(data) => Some(to_internal(&data)),
-            Err(ApiError::Uninitialized) => None,
-            Err(e) => {
-                eprintln!("API error: {e}");
-                None
-            },
+            Err(_) => None,
         }
     }
 
@@ -71,11 +59,7 @@ impl BookmarkStorage {
 
         match res {
             Ok(data) => data,
-            Err(ApiError::Uninitialized) => false,
-            Err(e) => {
-                eprintln!("API error: {e}");
-                false
-            },
+            Err(_) => false,
         }
     }
 }
