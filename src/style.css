@@ -11,8 +11,14 @@ listview.bookmark-feed > row {
 }
 
 listview.bookmark-feed > row:focus-visible .bookmark-card {
-  outline: 2px solid @accent_color;
-  outline-offset: -2px;
+  outline: 2px solid alpha(var(--accent-color), 0.5);
+  outline-offset: -1px;
+}
+
+@media (prefers-contrast: more) {
+  listview.bookmark-feed > row:focus-visible .bookmark-card {
+    outline-color: alpha(var(--accent-color), 0.8);
+  }
 }
 
 .bookmark-card {
