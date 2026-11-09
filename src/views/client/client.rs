@@ -4,7 +4,7 @@ use adw::prelude::*;
 use adw::subclass::prelude::*;
 use gtk::{gio, glib};
 
-use crate::api::{Connection, ConnectionStatus};
+use crate::api::Connection;
 use crate::models::ToolbarModel;
 use crate::views::BookmarksPage;
 
@@ -90,10 +90,10 @@ glib::wrapper! {
 #[gtk::template_callbacks]
 impl DinghyClient {
     #[template_callback(function)]
-    fn get_status_page(status: ConnectionStatus) -> &'static str {
-        match status {
-            ConnectionStatus::Connected => "content",
-            ConnectionStatus::Disconnected => "server-unavailable",
+    fn get_status_page(available: bool) -> &'static str {
+        match available {
+            true => "content",
+            false => "server-unavailable",
         }
     }
 

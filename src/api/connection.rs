@@ -22,6 +22,8 @@ mod imp {
     #[properties(wrapper_type = super::Connection)]
     pub struct Connection {
         pub api: Arc<RwLock<Option<LinkDingClient>>>,
+        #[property(get, set)]
+        pub available: Arc<RwLock<bool>>,
         #[property(get, set = Self::set_url, nullable)]
         pub url: Arc<RwLock<Option<String>>>,
         #[property(get, set = Self::set_token, nullable)]
@@ -119,6 +121,7 @@ impl Connection {
             #[weak(rename_to = connection)]
             self.clone(),
             move || {
+                connection.set_available(new_status == ConnectionStatus::Connected);
                 connection.set_status(new_status);
             }
         ));

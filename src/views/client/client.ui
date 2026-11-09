@@ -22,6 +22,11 @@
                 <property name="icon-name">list-add-symbolic</property>
                 <property name="action-name">bookmarks.add-dialog</property>
                 <property name="tooltip-text" translatable="yes">Add Bookmark</property>
+                <binding name="sensitive">
+                  <lookup name="available" type="DinghyConnection">
+                    <lookup name="connection">DinghyClient</lookup>
+                  </lookup>
+                </binding>
               </object>
             </child>
             <child type="end">
@@ -43,6 +48,11 @@
               <object class="GtkToggleButton" id="search_toggle_button">
                 <property name="icon-name">system-search-symbolic</property>
                 <property name="tooltip-text" translatable="yes">Search</property>
+                <binding name="sensitive">
+                  <lookup name="available" type="DinghyConnection">
+                    <lookup name="connection">DinghyClient</lookup>
+                  </lookup>
+                </binding>
               </object>
             </child>
           </object>
@@ -51,6 +61,11 @@
           <object class="GtkSearchBar" id="search_bar">
             <property name="key-capture-widget">toolbar_view</property>
             <property name="show_close_button">False</property>
+            <binding name="sensitive">
+              <lookup name="available" type="DinghyConnection">
+                <lookup name="connection">DinghyClient</lookup>
+              </lookup>
+            </binding>
             <child>
               <object class="GtkSearchEntry" id="search_entry">
                 <property name="search-delay">100</property>
@@ -62,7 +77,7 @@
           <object class="GtkStack" id="status_stack">
             <binding name="visible-child-name">
               <closure type="gchararray" function="get_status_page">
-                <lookup name="status" type="DinghyConnection">
+                <lookup name="available" type="DinghyConnection">
                   <lookup name="connection">DinghyClient</lookup>
                 </lookup>
               </closure>
@@ -74,11 +89,12 @@
                   <object class="AdwStatusPage">
                     <property name="icon-name">network-offline-symbolic</property>
                     <property name="title" translatable="yes">Server Unavailable</property>
+                    <property name="description" translatable="yes">Check your connection and server settings, then try again.</property>
                     <property name="child">
                       <object class="GtkButton">
-                        <property name="label" translatable="yes">Retry</property>
+                        <property name="label" translatable="yes">Try Again</property>
                         <property name="halign">center</property>
-                        <signal name="clicked" handler="on_retry_clicked" swapped="yes"/>
+                        <signal name="clicked" handler="on_retry_clicked" swapped="yes"></signal>
                         <style>
                           <class name="suggested-action"/>
                           <class name="pill"/>
