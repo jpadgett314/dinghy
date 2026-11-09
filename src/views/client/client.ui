@@ -81,11 +81,11 @@
                 <property name="child">
                   <object class="AdwStatusPage">
                     <property name="icon-name">network-offline-symbolic</property>
-                    <property name="title" translatable="yes">Server Unavailable</property>
+                    <property name="title" translatable="yes">Connection Lost</property>
                     <property name="description" translatable="yes">Check your connection and server settings, then try again.</property>
                     <property name="child">
                       <object class="GtkButton">
-                        <property name="label" translatable="yes">Try Again</property>
+                        <property name="label" translatable="yes">Retry</property>
                         <property name="halign">center</property>
                         <signal name="clicked" handler="on_retry_clicked" swapped="yes"></signal>
                         <style>

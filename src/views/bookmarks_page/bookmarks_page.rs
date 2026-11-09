@@ -1,4 +1,4 @@
-use std::cell::RefCell;
+use std::cell::{OnceCell, RefCell};
 
 use adw::prelude::*;
 use adw::subclass::prelude::*;
@@ -24,12 +24,12 @@ mod imp {
         pub settings: RefCell<Option<gio::Settings>>,
         #[property(get, set)]
         pub toolbar_model: RefCell<ToolbarModel>,
-        #[property(get, nullable)]
-        pub bookmark_storage: RefCell<Option<BookmarkStorage>>,
-        #[property(get, nullable)]
-        pub bookmark_feed_model: RefCell<Option<BookmarkFeedModel>>,
+        #[property(get, set)]
+        pub bookmark_storage: OnceCell<BookmarkStorage>,
+        #[property(get, set)]
+        pub bookmark_feed_model: OnceCell<BookmarkFeedModel>,
         #[template_child]
-        pub bookmark_feed_widget: TemplateChild<BookmarkFeed>,
+        pub status_stack: TemplateChild<gtk::Stack>,
     }
 
     #[glib::object_subclass]
@@ -40,6 +40,8 @@ mod imp {
 
         fn class_init(klass: &mut Self::Class) {
             ToolbarModel::ensure_type();
+            BookmarkStorage::ensure_type();
+            BookmarkFeedModel::ensure_type();
             BookmarkFeed::ensure_type();
             klass.bind_template();
             klass.bind_template_instance_callbacks();
@@ -83,61 +85,61 @@ impl BookmarksPage {
             ),
             action_entry1(
                 self,
-                "search",
-                Some(glib::VariantTy::STRING),
-                Self::on_search_bookmarks_action,
-            ),
-            action_entry1(
-                self,
                 "open-edit-dialog",
                 Some(glib::VariantTy::INT32),
                 Self::on_open_edit_dialog_action,
             ),
+            action_entry1(
+                self,
+                "search",
+                Some(glib::VariantTy::STRING),
+                Self::on_search_bookmarks_action,
+            ),
         ];
+
         self.actions().add_action_entries(entries);
     }
 
     fn on_open_add_dialog_action(&self) {
-        let Some(storage) = self.bookmark_storage() else {
-            return;
-        };
+        let storage = self.bookmark_storage();
+
         AddBookmarkDialog::new(&storage).present(Some(self));
     }
 
     fn on_open_edit_dialog_action(&self, param: Option<&glib::Variant>) {
         let id = param.unwrap().get::<i32>().unwrap();
-        let Some(feed) = self.bookmark_feed_model() else {
-            return;
-        };
-        let Some(storage) = self.bookmark_storage() else {
-            return;
-        };
+        let feed = self.bookmark_feed_model();
+        let storage = self.bookmark_storage();
         let Some(model) = feed.find_by_id(id) else {
             return;
         };
+
         EditBookmarkDialog::new(&storage, &model).present(Some(self));
     }
 
     fn on_search_bookmarks_action(&self, param: Option<&glib::Variant>) {
         let query = param.unwrap().get::<String>().unwrap();
+
         self.toolbar_model().set_searchbar_open(true);
         self.toolbar_model().set_query(query);
     }
 
+
     #[template_callback]
-    fn on_dependencies_changed(&self) {
-        if self.bookmark_feed_model().is_some() {
-            return;
-        }
-        let (Some(connection), Some(settings)) = (self.connection(), self.settings()) else {
-            return;
+    fn on_pending_changed(&self) {
+        let model = self.bookmark_feed_model();
+
+        let name = if model.pending() {
+            "loading"
+        } else if model.n_items() > 0 {
+            "bookmarks"
+        } else if model.query() == "" {
+            "no-bookmarks"
+        } else {
+            "no-matches"
         };
-        let storage = BookmarkStorage::new(&connection);
-        let feed = BookmarkFeedModel::new(storage.clone(), settings);
-        self.imp().bookmark_storage.replace(Some(storage));
-        self.imp().bookmark_feed_model.replace(Some(feed.clone()));
-        self.imp().bookmark_feed_widget.set_model(feed);
-        self.refresh();
+
+        self.imp().status_stack.set_visible_child_name(name);
     }
 
     #[template_callback]
@@ -145,9 +147,12 @@ impl BookmarksPage {
         self.refresh();
     }
 
+    #[template_callback]
+    fn on_connection_changed(&self) {
+        self.refresh();
+    }
+
     pub fn refresh(&self) {
-        if let Some(feed) = self.bookmark_feed_model() {
-            feed.fetch_query(self.toolbar_model().query());
-        }
+        self.bookmark_feed_model().fetch_query(self.toolbar_model().query());
     }
 }

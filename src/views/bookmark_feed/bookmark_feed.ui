@@ -6,99 +6,41 @@
     <property name="orientation">vertical</property>
     <property name="spacing">16</property>
     <child>
-      <object class="GtkStack">
+      <object class="GtkScrolledWindow" id="scroll_window">
+        <signal name="edge-reached" handler="on_edge_reached" swapped="yes"/>
         <property name="vexpand">True</property>
         <property name="hexpand">True</property>
-        <binding name="visible-child-name">
-          <closure type="gchararray" function="get_status_page">
-            <lookup name="status" type="BookmarkFeedModel">
-              <lookup name="model">BookmarkFeed</lookup>
-            </lookup>
-          </closure>
-        </binding>
-        <child>
-          <object class="GtkStackPage">
-            <property name="name">bookmark-scroller</property>
+        <property name="hscrollbar-policy">never</property>
+        <property name="child">
+          <object class="AdwClampScrollable">
+            <property name="maximum-size">760</property>
+            <property name="tightening-threshold">560</property>
             <property name="child">
-              <object class="GtkScrolledWindow" id="scroll_window">
-                <signal name="edge-reached" handler="on_edge_reached" swapped="yes"/>
-                <property name="vexpand">True</property>
-                <property name="hexpand">True</property>
-                <property name="hscrollbar-policy">never</property>
-                <property name="child">
-                  <object class="AdwClampScrollable">
-                    <property name="maximum-size">760</property>
-                    <property name="tightening-threshold">560</property>
-                    <property name="child">
-                      <object class="GtkListView" id="list">
-                        <signal name="activate" handler="on_activate" swapped="yes"/>
-                        <property name="valign">fill</property>
-                        <property name="single-click-activate">True</property>
-                        <property name="model">
-                          <object class="GtkNoSelection" id="selection">
-                            <binding name="model">
-                              <lookup name="model">BookmarkFeed</lookup>
-                            </binding>
-                          </object>
-                        </property>
-                        <property name="factory">
-                          <object class="GtkSignalListItemFactory" id="factory">
-                            <signal name="bind" handler="on_bind" swapped="yes"/>
-                            <signal name="setup" handler="on_setup" swapped="yes"/>
-                            <signal name="unbind" handler="on_unbind" swapped="yes"/>
-                          </object>
-                        </property>
-                        <style>
-                          <class name="bookmark-feed"/>
-                        </style>
-                      </object>
-                    </property>
+              <object class="GtkListView" id="list">
+                <signal name="activate" handler="on_activate" swapped="yes"/>
+                <property name="valign">fill</property>
+                <property name="single-click-activate">True</property>
+                <property name="model">
+                  <object class="GtkNoSelection" id="selection">
+                    <binding name="model">
+                      <lookup name="model">BookmarkFeed</lookup>
+                    </binding>
                   </object>
                 </property>
-              </object>
-            </property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkStackPage">
-            <property name="name">loading</property>
-            <property name="child">
-              <object class="AdwSpinner">
-                <property name="halign">center</property>
-                <property name="valign">center</property>
-                <property name="width-request">64</property>
-                <property name="height-request">64</property>
+                <property name="factory">
+                  <object class="GtkSignalListItemFactory" id="factory">
+                    <signal name="bind" handler="on_bind" swapped="yes"/>
+                    <signal name="setup" handler="on_setup" swapped="yes"/>
+                    <signal name="unbind" handler="on_unbind" swapped="yes"/>
+                  </object>
+                </property>
                 <style>
-                  <class name="dim-label"/>
+                  <class name="bookmark-feed"/>
                 </style>
               </object>
             </property>
           </object>
-        </child>
-        <child>
-          <object class="GtkStackPage">
-            <property name="name">no-matches</property>
-            <property name="child">
-              <object class="AdwStatusPage">
-                <property name="icon-name">system-search-symbolic</property>
-                <property name="title" translatable="yes">No Results Found</property>
-                <property name="description" translatable="yes">Try a different search.</property>
-              </object>
-            </property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkStackPage">
-            <property name="name">no-bookmarks</property>
-            <property name="child">
-              <object class="AdwStatusPage">
-                <property name="icon-name">bookmark-new-symbolic</property>
-                <property name="title" translatable="yes">No Bookmarks Yet</property>
-                <property name="description" translatable="yes">Add a bookmark to get started.</property>
-              </object>
-            </property>
-          </object>
-        </child>
+        </property>
       </object>
     </child>
   </template>

@@ -8,16 +8,6 @@ use crate::api::BookmarkStorage;
 use crate::models::BookmarkCardModel;
 use crate::util::EpochCounter;
 
-#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, glib::Enum)]
-#[enum_type(name = "BookmarkFeedStatus")]
-pub enum BookmarkFeedStatus {
-    #[default]
-    Loading,
-    Matches,
-    NoMatches,
-    EmptyServer,
-}
-
 mod imp {
     use super::*;
 
@@ -25,9 +15,9 @@ mod imp {
     #[properties(wrapper_type = super::BookmarkFeedModel)]
     pub struct BookmarkFeedModel {
         pub bookmark_list: RefCell<Vec<BookmarkCardModel>>,
-        #[property(get, set, construct_only)]
-        pub storage: OnceCell<BookmarkStorage>,
-        #[property(get, set, construct_only, nullable)]
+        #[property(get, set, nullable)]
+        pub storage: RefCell<Option<BookmarkStorage>>,
+        #[property(get, set, nullable)]
         pub settings: RefCell<Option<gio::Settings>>,
         #[property(get)]
         pub query: RefCell<String>,
@@ -35,8 +25,8 @@ mod imp {
         pub query_page: Cell<i32>,
         #[property(get, set)]
         pub epoch_counter: OnceCell<EpochCounter>,
-        #[property(get, builder(BookmarkFeedStatus::default()))]
-        pub status: Cell<BookmarkFeedStatus>,
+        #[property(get)]
+        pub pending: Cell<bool>,
     }
 
     #[glib::object_subclass]
@@ -67,14 +57,11 @@ mod imp {
 
     impl BookmarkFeedModel {
         pub fn fetch_query(&self, query: String) {
-            let changed = *self.query.borrow() != query;
             self.query.replace(query);
             self.query_page.set(0);
 
+            self.set_pending(true);
             self.fetch_and_splice(true);
-            if changed {
-                self.obj().notify_query();
-            }
         }
 
         pub fn fetch_more(&self) {
@@ -83,19 +70,17 @@ mod imp {
             self.fetch_and_splice(false);
         }
 
-        pub fn fetch_and_splice(&self, replace: bool) {
-            if replace {
-                self.set_status(BookmarkFeedStatus::Loading);
+        pub fn fetch_and_splice(&self, replace: bool){
+            let Some(bookmarks) = self.obj().storage() else {
+                return;
+            };
+            if bookmarks.connection().is_none() {
+                return;
             }
 
-            let bookmarks = self.obj().storage();
             let query = self.obj().query();
             let page = self.query_page.get();
-            let page_size = self
-                .obj()
-                .settings()
-                .map(|s| s.get::<u32>("max-bookmarks-per-query") as i32)
-                .unwrap_or(100);
+            let page_size = self.get_page_size();
 
             let model = self.obj().clone();
 
@@ -112,7 +97,7 @@ mod imp {
                 }
 
                 let Ok(matches) = reply else {
-                    model.imp().update_status();
+                    model.imp().set_pending(false);
                     return;
                 };
 
@@ -130,30 +115,31 @@ mod imp {
                 };
 
                 model.items_changed(index as u32, taken as u32, added as u32);
-                model.imp().update_status();
+                model.imp().set_pending(false);
             });
         }
 
-        fn set_status(&self, status: BookmarkFeedStatus) {
-            if self.status.replace(status) != status {
-                self.obj().notify_status();
+        fn set_pending(&self, pending: bool) {
+            if self.pending.replace(pending) != pending {
+                self.obj().notify_pending();
             }
         }
 
-        fn update_status(&self) {
-            let status = if !self.bookmark_list.borrow().is_empty() {
-                BookmarkFeedStatus::Matches
-            } else if self.query.borrow().is_empty() {
-                BookmarkFeedStatus::EmptyServer
-            } else {
-                BookmarkFeedStatus::NoMatches
-            };
-            self.set_status(status);
+        fn get_page_size(&self) -> i32 {
+            self.obj()
+                .settings()
+                .map(|s| s.get::<u32>("max-bookmarks-per-query") as i32)
+                .unwrap_or(100)
         }
     }
 
     #[glib::derived_properties]
-    impl ObjectImpl for BookmarkFeedModel {}
+    impl ObjectImpl for BookmarkFeedModel {
+        fn constructed(&self) {
+            self.parent_constructed();
+            self.epoch_counter.get_or_init(EpochCounter::new);
+        }
+    }
 }
 
 glib::wrapper! {
@@ -190,8 +176,6 @@ impl BookmarkFeedModel {
 
 impl Default for BookmarkFeedModel {
     fn default() -> Self {
-        glib::Object::builder()
-            .property("storage", BookmarkStorage::default())
-            .build()
+        glib::Object::new()
     }
 }

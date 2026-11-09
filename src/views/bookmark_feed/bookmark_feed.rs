@@ -4,7 +4,7 @@ use adw::prelude::*;
 use adw::subclass::prelude::*;
 use gtk::glib;
 
-use crate::models::{BookmarkCardModel, BookmarkFeedModel, BookmarkFeedStatus};
+use crate::models::{BookmarkCardModel, BookmarkFeedModel};
 use crate::views::BookmarkCard;
 
 mod imp {
@@ -61,16 +61,6 @@ glib::wrapper! {
 
 #[gtk::template_callbacks]
 impl BookmarkFeed {
-    #[template_callback(function)]
-    fn get_status_page(status: BookmarkFeedStatus) -> &'static str {
-        match status {
-            BookmarkFeedStatus::Loading => "loading",
-            BookmarkFeedStatus::Matches => "bookmark-scroller",
-            BookmarkFeedStatus::NoMatches => "no-matches",
-            BookmarkFeedStatus::EmptyServer => "no-bookmarks",
-        }
-    }
-
     #[template_callback]
     fn on_edge_reached(&self, edge: gtk::PositionType) {
         if edge == gtk::PositionType::Bottom {

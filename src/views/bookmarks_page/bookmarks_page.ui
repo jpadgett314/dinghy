@@ -1,16 +1,92 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
   <template class="BookmarksPage" parent="GtkBox">
-    <signal name="notify::connection" handler="on_dependencies_changed"/>
-    <signal name="notify::settings" handler="on_dependencies_changed"/>
     <property name="orientation">vertical</property>
     <property name="toolbar-model">
       <object class="ToolbarModel">
         <signal name="notify::query" handler="on_query_changed" swapped="yes"/>
       </object>
     </property>
+    <property name="bookmark-storage">
+      <object class="BookmarkStorage" id="bookmark_storage">
+        <property name="connection" bind-source="BookmarksPage" bind-property="connection" bind-flags="sync-create"/>
+      </object>
+    </property>
+    <property name="bookmark-feed-model">
+      <object class="BookmarkFeedModel">
+        <property name="storage">bookmark_storage</property>
+        <property name="settings" bind-source="BookmarksPage" bind-property="settings" bind-flags="sync-create"/>
+        <signal name="notify::pending" handler="on_pending_changed" swapped="yes"></signal>
+      </object>
+    </property>
+    <signal name="notify::connection" handler="on_connection_changed"/>
     <child>
-      <object class="BookmarkFeed" id="bookmark_feed_widget"/>
+      <object class="GtkStack" id="status_stack">
+        <property name="vexpand">True</property>
+        <property name="hexpand">True</property>
+        <!--
+        <binding name="visible-child-name">
+          <closure type="gchararray" function="get_status_page">
+            <lookup name="pending" type="BookmarkFeedModel">
+              <lookup name="bookmark-feed-model">BookmarksPage</lookup>
+            </lookup>
+            <lookup name="status" type="BookmarkFeedModel">
+              <lookup name="bookmark-feed-model">BookmarksPage</lookup>
+            </lookup>
+          </closure>
+        </binding>
+        -->
+        <child>
+          <object class="GtkStackPage">
+            <property name="name">bookmarks</property>
+            <property name="child">
+              <object class="BookmarkFeed" id="bookmark_feed_widget">
+                <property name="model" bind-source="BookmarksPage" bind-property="bookmark-feed-model" bind-flags="sync-create"/>
+              </object>
+            </property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkStackPage">
+            <property name="name">loading</property>
+            <property name="child">
+              <object class="AdwSpinner">
+                <property name="halign">center</property>
+                <property name="valign">center</property>
+                <property name="width-request">64</property>
+                <property name="height-request">64</property>
+                <style>
+                  <class name="dim-label"/>
+                </style>
+              </object>
+            </property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkStackPage">
+            <property name="name">no-matches</property>
+            <property name="child">
+              <object class="AdwStatusPage">
+                <property name="icon-name">system-search-symbolic</property>
+                <property name="title" translatable="yes">No Results Found</property>
+                <property name="description" translatable="yes">Try a different search.</property>
+              </object>
+            </property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkStackPage">
+            <property name="name">no-bookmarks</property>
+            <property name="child">
+              <object class="AdwStatusPage">
+                <property name="icon-name">bookmark-new-symbolic</property>
+                <property name="title" translatable="yes">No Bookmarks Yet</property>
+                <property name="description" translatable="yes">Add a bookmark to get started.</property>
+              </object>
+            </property>
+          </object>
+        </child>
+      </object>
     </child>
   </template>
 </interface>
