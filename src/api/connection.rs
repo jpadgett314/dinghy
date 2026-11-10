@@ -68,6 +68,7 @@ impl Connection {
         glib::Object::builder()
             .property("url", url)
             .property("token", token)
+            .property("available", true)
             .build()
     }
 
@@ -136,6 +137,7 @@ impl From<&gio::Settings> for Connection {
         let object: Self = glib::Object::builder()
             .property("url", settings.get::<String>("api-url"))
             .property("token", settings.get::<String>("api-token"))
+            .property("available", true)
             .build();
 
         object.bind(settings);
@@ -146,6 +148,6 @@ impl From<&gio::Settings> for Connection {
 
 impl Default for Connection {
     fn default() -> Self {
-        glib::Object::new()
+        glib::Object::builder().build()
     }
 }

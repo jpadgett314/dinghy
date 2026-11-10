@@ -124,7 +124,6 @@ impl BookmarksPage {
         self.toolbar_model().set_query(query);
     }
 
-
     #[template_callback]
     fn on_pending_changed(&self) {
         let model = self.bookmark_feed_model();
