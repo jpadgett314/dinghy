@@ -31,11 +31,6 @@ listview.bookmark-feed > row:focus-visible .bookmark-card {
 
 .bookmark-tag {
   padding: 4px 10px;
-  margin-bottom: -2px;
-}
-
-.bookmark-button {
-  margin-bottom: -2px;
 }
 
 .tag-entry-row {

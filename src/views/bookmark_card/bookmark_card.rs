@@ -104,6 +104,19 @@ impl BookmarkCard {
         !text.is_empty()
     }
 
+    #[template_callback(function)]
+    fn get_first_nonempty3(s1: String, s2: String, s3: String) -> Option<String> {
+        if s1 != "" {
+            Some(s1)
+        } else if s2 != "" {
+            Some(s2)
+        } else if s3 != "" {
+            Some(s3)
+        } else {
+            None
+        }
+    }
+
     #[template_callback]
     fn on_edit_clicked(&self) {
         let Some(model) = self.model() else { return };

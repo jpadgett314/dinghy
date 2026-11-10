@@ -43,13 +43,14 @@
         <child>
           <object class="GtkLabel" id="title_label">
             <binding name="label">
-              <lookup name="title" type="BookmarkCardModel">
-                <lookup name="model">BookmarkCard</lookup>
-              </lookup>
-            </binding>
-            <binding name="visible">
-              <closure type="gboolean" function="has_text">
-                <lookup name="label">title_label</lookup>
+              <closure type="gchararray" function="get_first_nonempty3">
+                <lookup name="title" type="BookmarkCardModel">
+                  <lookup name="model">BookmarkCard</lookup>
+                </lookup>
+                <lookup name="url" type="BookmarkCardModel">
+                  <lookup name="model">BookmarkCard</lookup>
+                </lookup>
+                <constant type="gchararray">Untitled</constant>
               </closure>
             </binding>
             <property name="xalign">0</property>
@@ -85,29 +86,10 @@
           </object>
         </child>
         <child>
-          <object class="GtkLabel" id="url_label">
-            <binding name="label">
-              <lookup name="url" type="BookmarkCardModel">
-                <lookup name="model">BookmarkCard</lookup>
-              </lookup>
-            </binding>
-            <binding name="visible">
-              <closure type="gboolean" function="has_text">
-                <lookup name="label">url_label</lookup>
-              </closure>
-            </binding>
-            <property name="xalign">0</property>
-            <property name="ellipsize">middle</property>
-            <style>
-              <class name="caption"/>
-              <class name="dim-label"/>
-            </style>
-          </object>
-        </child>
-        <child>
           <object class="AdwWrapBox" id="tags_box">
-            <property name="child-spacing">8</property>
+            <property name="margin-top">4</property>
             <property name="line-spacing">8</property>
+            <property name="child-spacing">8</property>
             <child>
               <object class="GtkButton">
                 <signal name="clicked" handler="on_edit_clicked" swapped="yes"/>
@@ -124,4 +106,3 @@
     </child>
   </template>
 </interface>
-
