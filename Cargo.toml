@@ -8,6 +8,7 @@ rust-version = "1.92"
 gettext-rs = { version = "0.8", features = ["gettext-system"] }
 linkding-rs = "0.4.0"
 ureq = "3.4"
+urlencoding = "2.1"
 
 [dependencies.gtk]
 package = "gtk4"

@@ -44,7 +44,10 @@ impl BookmarkStorage {
         };
 
         let req = ListBookmarksArgs {
-            query: Some(q),
+            // BUG: linkding-rs does not encode
+            // https://github.com/zbrox/linkding-rs/issues/7
+            // https://github.com/jpadgett314/dinghy/issues/37
+            query: Some(urlencoding::encode(&q).into_owned()),
             limit: Some(ps),
             offset: Some(ps * p),
             modified_since: None,
@@ -99,4 +102,3 @@ impl Default for BookmarkStorage {
         glib::Object::new()
     }
 }
-
