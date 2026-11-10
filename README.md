@@ -6,6 +6,10 @@
 
 <p align="center">Bringing Linkding bookmarks to GNOME</p>
 
+<p align="center">
+  <img src="data/screenshots/main.png" alt="Dinghy main window">
+</p>
+
 Dinghy is a work-in-progress [Linkding](https://github.com/sissbruecker/linkding) client for GNOME, built with Rust, GTK 4, and libadwaita.
 
 You need a running Linkding instance and an API token to connect.
@@ -46,4 +50,3 @@ meson install -C _build
 ## Acknowledgements
 
 Thank you [Pods](https://github.com/marhkb/pods) for being a great GTK example. Pods also helps me manage my Linkding servers.
-
