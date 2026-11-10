@@ -25,7 +25,7 @@ Dinghy is not yet available on Flathub. Build from source to try it.
 GNOME Builder is the easiest way to build this project.
 
 1. Download GNOME Builder.
-2. In Builder, click "Clone Repository" at the bottom, and enter https://github.com/jpadgett314/dinghy as the URL.
+2. In Builder, click "Clone Repository" at the bottom, and enter `https://github.com/jpadgett314/dinghy.git` as the URL.
 3. Click the build button at the top once the project is loaded.
 
 ### Meson
