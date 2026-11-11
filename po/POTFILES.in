@@ -2,7 +2,7 @@
 # Please keep this file sorted alphabetically.
 data/io.github.jpadgett314.Dinghy.desktop.in
 data/io.github.jpadgett314.Dinghy.metainfo.xml.in
-data/io.github.jpadgett314.Dinghy.gschema.xml
+data/io.github.jpadgett314.Dinghy.gschema.xml.in
 src/views/add_bookmark/add_bookmark.rs
 src/views/add_bookmark/add_bookmark.ui
 src/views/bookmark_feed/bookmark_feed.ui

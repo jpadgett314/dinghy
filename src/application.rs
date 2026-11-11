@@ -24,7 +24,7 @@ use gettextrs::gettext;
 use gtk::{gio, glib};
 
 use crate::api::Connection;
-use crate::config::VERSION;
+use crate::config::{APPLICATION_ID, VERSION};
 use crate::views::DinghyWindow;
 use crate::views::PreferencesDialog;
 
@@ -42,7 +42,7 @@ mod imp {
 
     impl Default for DinghyApplication {
         fn default() -> Self {
-            let settings = gio::Settings::new("io.github.jpadgett314.Dinghy");
+            let settings = gio::Settings::new(APPLICATION_ID);
             let connection = Connection::from(&settings);
 
             Self { connection, settings }
@@ -139,7 +139,7 @@ impl DinghyApplication {
 
         let about = adw::AboutDialog::builder()
             .application_name("Dinghy")
-            .application_icon("io.github.jpadgett314.Dinghy")
+            .application_icon(APPLICATION_ID)
             .developer_name("Jacob Padgett")
             .version(VERSION)
             .developers(vec!["Jacob Padgett"])

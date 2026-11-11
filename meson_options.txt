@@ -1,0 +1,6 @@
+option('application-id',
+  type: 'combo',
+  choices: ['io.github.jpadgett314.Dinghy', 'io.github.jpadgett314.Dinghy.Devel'],
+  value: 'io.github.jpadgett314.Dinghy',
+  description: 'Application identity and installed icon',
+)

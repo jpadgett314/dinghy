@@ -1,3 +1,3 @@
 [D-BUS Service]
-Name=io.github.jpadgett314.Dinghy
+Name=@APPLICATION_ID@
 Exec=@bindir@/dinghy --gapplication-service

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <schemalist gettext-domain="dinghy">
-	<schema id="io.github.jpadgett314.Dinghy" path="/io/github/jpadgett314/Dinghy/">
+	<schema id="@APPLICATION_ID@" path="@APPLICATION_PATH@">
 	  <key name="onboarded" type="b">
 	    <default>false</default>
 	  </key>

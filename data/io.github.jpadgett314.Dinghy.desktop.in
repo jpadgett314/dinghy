@@ -1,7 +1,7 @@
 [Desktop Entry]
 Name=Dinghy
 Exec=dinghy
-Icon=io.github.jpadgett314.Dinghy
+Icon=@APPLICATION_ID@
 Terminal=false
 Type=Application
 Categories=Utility;

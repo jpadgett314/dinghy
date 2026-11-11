@@ -1,5 +1,5 @@
 {
-    "id" : "io.github.jpadgett314.Dinghy",
+    "id" : "io.github.jpadgett314.Dinghy.Devel",
     "runtime" : "org.gnome.Platform",
     "runtime-version" : "50",
     "sdk" : "org.gnome.Sdk",
@@ -40,10 +40,22 @@
             "name" : "dinghy",
             "builddir" : true,
             "buildsystem" : "meson",
+            "config-opts" : [
+                "-Dapplication-id=io.github.jpadgett314.Dinghy.Devel"
+            ],
             "sources" : [
                 {
-                    "type" : "git",
-                    "url" : "file:///mnt/504AC6424AC62496/git"
+                    "type" : "dir",
+                    "path" : ".",
+                    "skip" : [
+                        ".git",
+                        ".flatpak-builder",
+                        ".flatpak-build",
+                        ".flatpak-repo",
+                        "target",
+                        "_build",
+                        "*.flatpak"
+                    ]
                 }
             ]
         }
