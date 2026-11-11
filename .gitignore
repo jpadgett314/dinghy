@@ -1,2 +1,7 @@
 target/**
 .fuse_hidden*
+/.flatpak-builder/
+/.flatpak-build/
+/.flatpak-repo/
+/_build/
+/*.flatpak

@@ -1,0 +1,28 @@
+name: CI
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  flatpak:
+    name: Development bundle (x86_64)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    container:
+      image: ghcr.io/flathub-infra/flatpak-github-actions:gnome-50
+      options: --privileged
+    steps:
+      - uses: actions/checkout@v6
+      - uses: flatpak/flatpak-github-actions/flatpak-builder@v6
+        with:
+          manifest-path: io.github.jpadgett314.Dinghy.Devel.json
+          bundle: dinghy-devel.flatpak
+          artifact-name: dinghy-devel-x86_64
+          arch: x86_64
+          branch: devel
+          build-dir: .flatpak-build
+          repo-dir: .flatpak-repo
