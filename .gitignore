@@ -4,4 +4,6 @@ target/**
 /.flatpak-build/
 /.flatpak-repo/
 /_build/
+/_release/
 /*.flatpak
+/src/config.rs

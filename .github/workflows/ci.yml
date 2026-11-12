@@ -11,7 +11,7 @@ jobs:
   flatpak:
     name: Development bundle (x86_64)
     runs-on: ubuntu-24.04
-    timeout-minutes: 60
+    timeout-minutes: 30
     container:
       image: ghcr.io/flathub-infra/flatpak-github-actions:gnome-50
       options: --privileged

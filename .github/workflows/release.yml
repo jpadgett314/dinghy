@@ -1,0 +1,70 @@
+name: Create Release Draft
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing release tag (for example, v0.1.0)
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Vendored source archive
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Check out release tag
+        uses: actions/checkout@v6
+        with:
+          ref: refs/tags/${{ inputs.tag }}
+
+      - name: Install distribution tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y meson ninja-build gettext libglib2.0-dev libgtk-4-bin desktop-file-utils
+          rustup update stable --no-self-update
+          rustup default stable
+
+      - name: Configure distribution
+        run: meson setup _release --prefix=/app -Dprofile=default
+
+      - name: Check release versions
+        env:
+          RELEASE_TAG: ${{ inputs.tag }}
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          import subprocess
+          import tomllib
+          from pathlib import Path
+
+          project = json.loads(subprocess.check_output(
+              ["meson", "introspect", "--projectinfo", "_release"], text=True
+          ))
+          cargo = tomllib.loads(Path("Cargo.toml").read_text())
+          version = project["version"]
+          if cargo["package"]["version"] != version:
+              raise SystemExit("Cargo.toml and meson.build versions must match")
+          if os.environ["RELEASE_TAG"] != f"v{version}":
+              raise SystemExit(f"Expected release tag v{version}")
+          PY
+
+      - name: Create vendored archive and checksum
+        run: meson dist -C _release --no-tests
+
+      - name: Create release draft
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ inputs.tag }}
+          draft: true
+          prerelease: ${{ contains(inputs.tag, '-') }}
+          generate_release_notes: true
+          fail_on_unmatched_files: true
+          files: |
+            _release/meson-dist/dinghy-*.tar.xz
+            _release/meson-dist/dinghy-*.tar.xz.sha256sum

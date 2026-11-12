@@ -1,0 +1,41 @@
+{
+    "id" : "io.github.jpadgett314.Dinghy",
+    "runtime" : "org.gnome.Platform",
+    "runtime-version" : "50",
+    "sdk" : "org.gnome.Sdk",
+    "sdk-extensions" : [
+        "org.freedesktop.Sdk.Extension.rust-stable"
+    ],
+    "command" : "dinghy",
+    "finish-args" : [
+        "--share=network",
+        "--share=ipc",
+        "--socket=fallback-x11",
+        "--device=dri",
+        "--socket=wayland",
+        "--env=RUST_BACKTRACE=1"
+    ],
+    "build-options" : {
+        "append-path" : "/usr/lib/sdk/rust-stable/bin",
+        "env" : {
+            "CARGO_NET_OFFLINE" : "true"
+        }
+    },
+    "modules" : [
+        {
+            "name" : "dinghy",
+            "builddir" : true,
+            "buildsystem" : "meson",
+            "config-opts" : [
+                "-Dprofile=default"
+            ],
+            "sources" : [
+                {
+                    "type" : "archive",
+                    "url" : "https://github.com/jpadgett314/dinghy/releases/download/v0.1.0/dinghy-0.1.0.tar.xz",
+                    "sha256" : "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+                }
+            ]
+        }
+    ]
+}

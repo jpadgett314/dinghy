@@ -46,3 +46,8 @@ native-install: native-build
 # Run the native app installed by native-install.
 native-run:
     "$HOME/.local/bin/dinghy"
+
+# Create a vendored release source archive and checksum from committed sources.
+dist:
+    meson setup _release --prefix="$HOME/.local" -Dprofile=default
+    meson dist -C _release --no-tests

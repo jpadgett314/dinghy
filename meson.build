@@ -7,10 +7,16 @@ project('dinghy', 'rust',
 i18n = import('i18n')
 gnome = import('gnome')
 
-application_id = get_option('application-id')
+application_id = 'io.github.jpadgett314.Dinghy'
+if get_option('profile') == 'development'
+  application_id += '.Devel'
+endif
+
 application_conf = configuration_data()
 application_conf.set('APPLICATION_ID', application_id)
 application_conf.set('APPLICATION_PATH', '/' + application_id.replace('.', '/') + '/')
+
+meson.add_dist_script('sh', files('build-aux/dist-vendor.sh'))
 
 subdir('data')
 subdir('src')

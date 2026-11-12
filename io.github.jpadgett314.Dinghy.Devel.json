@@ -41,7 +41,7 @@
             "builddir" : true,
             "buildsystem" : "meson",
             "config-opts" : [
-                "-Dapplication-id=io.github.jpadgett314.Dinghy.Devel"
+                "-Dprofile=development"
             ],
             "sources" : [
                 {
@@ -54,6 +54,7 @@
                         ".flatpak-repo",
                         "target",
                         "_build",
+                        "_release",
                         "*.flatpak"
                     ]
                 }
