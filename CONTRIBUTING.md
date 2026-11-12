@@ -36,4 +36,3 @@ Please manually test your changes before submitting a pull request.
 One PR should address one problem or improvement, and ideally tags one issue. 
 
 Feel free to assign yourself to an issue or create one before starting work. 
-

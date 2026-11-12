@@ -16,7 +16,11 @@ You need a running Linkding instance and an API token to connect.
 
 ## Installation
 
-Dinghy is not yet available on Flathub. Build from source to try it.
+Dinghy is not yet available on Flathub. Build from source to try it. 
+
+Development snapshots for x86_64 are available from [CI runs](https://github.com/jpadgett314/dinghy/actions/workflows/ci.yml).
+
+*Download via GitHub Releases is coming soon!*
 
 ## Building
 
@@ -26,7 +30,10 @@ GNOME Builder is the easiest way to build this project.
 
 1. Download GNOME Builder.
 2. In Builder, click "Clone Repository" at the bottom, and enter `https://github.com/jpadgett314/dinghy.git` as the URL.
-3. Click the build button at the top once the project is loaded.
+3. Once loaded, ensure the `io.github.jpadgett314.Dinghy.Devel.json` Build Profile is selected.
+4. Click the build button at the top once the project is loaded.
+
+As an alternative to GNOME Builder, build commands are provided in `justfile`. 
 
 ### Meson
 

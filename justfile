@@ -3,6 +3,7 @@ manifest := app_id + '.json'
 branch := 'devel'
 bundle_file := 'dinghy-devel.flatpak'
 
+# just --list
 default:
     @just --list
 
