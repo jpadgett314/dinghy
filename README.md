@@ -56,4 +56,9 @@ meson install -C _build
 
 ## Acknowledgements
 
-Thank you [Pods](https://github.com/marhkb/pods) for being a great GTK example. Pods also helps me manage my Linkding servers.
+Many useful techniques were learned by observing the [Pods](https://github.com/marhkb/pods) project. Also, it's been an awesome tool for managing Linkding containers.
+
+## AI Disclosure
+
+Dinghy is built with AI assistance. This project follows the [GTK AI Contribution Policy](https://github.com/GNOME/gtk/blob/main/CONTRIBUTING.md#ai-contribution-policy).
+
