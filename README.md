@@ -40,7 +40,7 @@ As an alternative to GNOME Builder, build commands are provided in `justfile`.
 Requirements:
 
 - Rust 1.92 or newer (including Cargo)
-- GTK 4 and its development dependencies for GNOME 50
+- GTK 4 and its development dependencies for GNOME 51
 - libadwaita 1.9 or newer
 - Meson 1.0 or newer and Ninja
 - gettext
@@ -61,4 +61,3 @@ Many useful techniques were learned by observing the [Pods](https://github.com/m
 ## AI Disclosure
 
 Dinghy is built with AI assistance. This project follows the [GTK AI Contribution Policy](https://github.com/GNOME/gtk/blob/main/CONTRIBUTING.md#ai-contribution-policy).
-
