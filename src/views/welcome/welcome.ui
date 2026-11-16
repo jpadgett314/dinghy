@@ -14,7 +14,9 @@
         </child>
         <property name="content">
           <object class="AdwStatusPage">
-            <property name="icon-name">user-bookmarks-symbolic</property>
+            <binding name="icon-name">
+              <closure type="gchararray" function="application_id"/>
+            </binding>
             <property name="title" translatable="yes">Welcome to Dinghy</property>
             <property name="description" translatable="yes">Connect your Linkding instance to start browsing</property>
             <property name="child">

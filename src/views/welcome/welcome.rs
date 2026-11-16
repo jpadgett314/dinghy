@@ -55,6 +55,11 @@ glib::wrapper! {
 
 #[gtk::template_callbacks]
 impl DinghyWelcome {
+    #[template_callback(function)]
+    fn application_id() -> &'static str {
+        crate::config::APPLICATION_ID
+    }
+
     pub fn new(connection: &Connection, settings: &gio::Settings) -> Self {
         glib::Object::builder()
             .property("connection", connection)
@@ -70,4 +75,3 @@ impl DinghyWelcome {
         ConnectDialog::new(&connection, &settings).present(Some(self));
     }
 }
-
