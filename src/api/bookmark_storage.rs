@@ -44,10 +44,7 @@ impl BookmarkStorage {
         };
 
         let req = ListBookmarksArgs {
-            // BUG: linkding-rs does not encode
-            // https://github.com/zbrox/linkding-rs/issues/7
-            // https://github.com/jpadgett314/dinghy/issues/37
-            query: Some(urlencoding::encode(&q).into_owned()),
+            query: Some(q),
             limit: Some(ps),
             offset: Some(ps * p),
             modified_since: None,
