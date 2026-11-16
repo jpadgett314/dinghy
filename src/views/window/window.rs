@@ -25,6 +25,7 @@ use adw::subclass::prelude::*;
 use gtk::{gio, glib};
 
 use crate::api::Connection;
+use crate::config::APPLICATION_ID;
 use crate::views::{DinghyClient, DinghyWelcome};
 
 mod imp {
@@ -68,11 +69,17 @@ mod imp {
         fn constructed(&self) {
             self.parent_constructed();
             let obj = self.obj();
+
             obj.setup_gactions();
+
             if obj.settings().is_some_and(|p| p.get("onboarded")) {
                 obj.show_client();
             } else {
                 obj.show_welcome();
+            }
+
+            if APPLICATION_ID.ends_with(".Devel") {
+                obj.add_css_class("devel");
             }
         }
     }
