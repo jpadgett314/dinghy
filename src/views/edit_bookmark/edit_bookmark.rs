@@ -116,9 +116,9 @@ impl EditBookmarkDialog {
                 gettext("Failed to save bookmark")
             };
             let _ = obj.activate_action("win.toast", Some(&message.to_variant()));
-            let _ = obj.activate_action("client.refresh", None);
             obj.imp().save_button.set_sensitive(true);
             if success {
+                let _ = obj.activate_action("client.refresh", None);
                 obj.close();
             }
         });
