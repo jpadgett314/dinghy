@@ -100,11 +100,16 @@ impl DinghyClient {
     }
 
     #[template_callback(function)]
-    fn get_status_page(available: bool) -> &'static str {
-        match available {
-            true => "content",
-            false => "server-unavailable",
+    fn get_status_page(lost: bool) -> &'static str {
+        match lost {
+            false => "content",
+            true => "server-unavailable",
         }
+    }
+
+    #[template_callback(function)]
+    fn invert_bool(value: bool) -> bool {
+        !value
     }
 
     #[template_callback]

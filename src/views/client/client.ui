@@ -23,9 +23,11 @@
                 <property name="action-name">bookmarks.open-add-dialog</property>
                 <property name="tooltip-text" translatable="yes">Add Bookmark</property>
                 <binding name="sensitive">
-                  <lookup name="available" type="DinghyConnection">
-                    <lookup name="connection">DinghyClient</lookup>
-                  </lookup>
+                  <closure type="gboolean" function="invert_bool">
+                    <lookup name="lost" type="DinghyConnection">
+                      <lookup name="connection">DinghyClient</lookup>
+                    </lookup>
+                  </closure>
                 </binding>
               </object>
             </child>
@@ -42,9 +44,11 @@
                 <property name="icon-name">system-search-symbolic</property>
                 <property name="tooltip-text" translatable="yes">Search</property>
                 <binding name="sensitive">
-                  <lookup name="available" type="DinghyConnection">
-                    <lookup name="connection">DinghyClient</lookup>
-                  </lookup>
+                  <closure type="gboolean" function="invert_bool">
+                    <lookup name="lost" type="DinghyConnection">
+                      <lookup name="connection">DinghyClient</lookup>
+                    </lookup>
+                  </closure>
                 </binding>
               </object>
             </child>
@@ -55,9 +59,11 @@
             <property name="key-capture-widget">toolbar_view</property>
             <property name="show_close_button">False</property>
             <binding name="sensitive">
-              <lookup name="available" type="DinghyConnection">
-                <lookup name="connection">DinghyClient</lookup>
-              </lookup>
+              <closure type="gboolean" function="invert_bool">
+                <lookup name="lost" type="DinghyConnection">
+                  <lookup name="connection">DinghyClient</lookup>
+                </lookup>
+              </closure>
             </binding>
             <child>
               <object class="GtkSearchEntry" id="search_entry">
@@ -70,7 +76,7 @@
           <object class="GtkStack" id="status_stack">
             <binding name="visible-child-name">
               <closure type="gchararray" function="get_status_page">
-                <lookup name="available" type="DinghyConnection">
+                <lookup name="lost" type="DinghyConnection">
                   <lookup name="connection">DinghyClient</lookup>
                 </lookup>
               </closure>

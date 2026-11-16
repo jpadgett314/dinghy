@@ -20,8 +20,34 @@
             </child>
             <child type="end">
               <object class="GtkButton">
-                <property name="label" translatable="yes">Connect</property>
-                <signal name="clicked" handler="on_connect_clicked" swapped="yes"/>
+                <binding name="sensitive">
+                  <closure type="gboolean" function="is_not">
+                    <lookup name="pending">ConnectDialog</lookup>
+                  </closure>
+                </binding>
+                <signal name="clicked" handler="on_submit_clicked" swapped="yes"/>
+                <property name="child">
+                  <object class="GtkBox">
+                    <property name="margin-start">6</property>
+                    <property name="margin-end">6</property>
+                    <property name="spacing">6</property>
+                    <child>
+                      <object class="AdwSpinner">
+                        <property name="width-request">16</property>
+                        <property name="height-request">16</property>
+                        <property name="valign">center</property>
+                        <binding name="visible">
+                          <lookup name="pending">ConnectDialog</lookup>
+                        </binding>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="label" translatable="yes">Continue</property>
+                      </object>
+                    </child>
+                  </object>
+                </property>
                 <style>
                   <class name="suggested-action"/>
                 </style>
@@ -30,37 +56,61 @@
           </object>
         </child>
         <property name="content">
-          <object class="GtkScrolledWindow">
-            <property name="hscrollbar-policy">never</property>
-            <property name="propagate-natural-height">True</property>
-            <property name="child">
-              <object class="AdwClamp">
-                <property name="child">
-                  <object class="AdwPreferencesGroup">
-                    <property name="margin-top">24</property>
-                    <property name="margin-bottom">24</property>
-                    <property name="margin-start">24</property>
-                    <property name="margin-end">24</property>
-                    <property name="valign">start</property>
-                    <property name="title" translatable="yes">Credentials</property>
-                    <child>
-                      <object class="AdwEntryRow" id="api_url_row">
-                        <property name="title" translatable="yes">Instance URL</property>
-                        <property name="input-purpose">url</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="AdwPasswordEntryRow" id="api_token_row">
-                        <property name="title" translatable="yes">API Token</property>
-                      </object>
-                    </child>
-                  </object>
-                </property>
+          <object class="GtkBox">
+            <property name="orientation">vertical</property>
+            <child>
+              <object class="AdwBanner">
+                <binding name="revealed">
+                  <closure type="gboolean" function="both">
+                    <closure type="gboolean" function="is_not">
+                      <lookup name="pending">ConnectDialog</lookup>
+                    </closure>
+                    <closure type="gboolean" function="is_error">
+                      <lookup name="error">ConnectDialog</lookup>
+                    </closure>
+                  </closure>
+                </binding>
+                <binding name="title">
+                  <closure type="gchararray" function="to_status_text">
+                    <lookup name="error">ConnectDialog</lookup>
+                  </closure>
+                </binding>
               </object>
-            </property>
+            </child>
+            <child>
+              <object class="AdwPreferencesGroup">
+                <property name="margin-top">12</property>
+                <property name="margin-bottom">24</property>
+                <property name="margin-start">24</property>
+                <property name="margin-end">24</property>
+                <property name="valign">start</property>
+                <property name="title" translatable="yes">Credentials</property>
+                <binding name="sensitive">
+                  <closure type="gboolean" function="is_not">
+                    <lookup name="pending">ConnectDialog</lookup>
+                  </closure>
+                </binding>
+                <child>
+                  <object class="AdwEntryRow" id="api_url_row">
+                    <property name="title" translatable="yes">Instance URL</property>
+                    <property name="input-purpose">url</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwPasswordEntryRow" id="api_token_row">
+                    <property name="title" translatable="yes">API Token</property>
+                  </object>
+                </child>
+              </object>
+            </child>
           </object>
         </property>
       </object>
     </property>
   </template>
+  <object class="GBindingGroup" id="connection_bindings">
+    <binding name="source">
+      <lookup name="connection">ConnectDialog</lookup>
+    </binding>
+  </object>
 </interface>

@@ -6,6 +6,7 @@ use gtk::{gio, glib};
 use linkding::{LinkDingClient, LinkDingError, ListBookmarksArgs};
 
 use crate::api::ApiError;
+use crate::util::EpochCounter;
 
 mod imp {
     use super::*;
@@ -14,17 +15,21 @@ mod imp {
     #[properties(wrapper_type = super::Connection)]
     pub struct Connection {
         pub api: Arc<RwLock<Option<LinkDingClient>>>,
-        #[property(get, set)]
-        pub available: Arc<RwLock<bool>>,
         #[property(get, set = Self::set_url, nullable)]
         pub url: Arc<RwLock<Option<String>>>,
         #[property(get, set = Self::set_token, nullable)]
         pub token: Arc<RwLock<Option<String>>>,
+        #[property(get, set)]
+        pub epoch_counter: Arc<RwLock<Option<EpochCounter>>>,
+        #[property(get, set)]
+        pub lost: Arc<RwLock<bool>>,
     }
 
     impl Connection {
         pub fn set_api(&self, url: &str, token: &str) {
             *self.api.write().unwrap() = Some(LinkDingClient::new(url, token));
+            // The caller should do it if desired
+            // self.obj().poll();
         }
 
         pub fn set_url(&self, value: Option<String>) {
@@ -46,6 +51,27 @@ mod imp {
 
             *self.token.write().unwrap() = value.clone();
         }
+
+        pub fn poll_from_worker(&self) {
+            let req = ListBookmarksArgs {
+                query: Some(String::from("POLL")),
+                limit: Some(0),
+                offset: Some(0),
+                modified_since: None,
+            };
+
+            let _ = self.obj().use_api(|api| api.list_bookmarks(req));
+        }
+
+        pub fn poll_from_main(&self) {
+            glib::spawn_future_local(glib::clone!(
+                #[weak(rename_to = connection)]
+                self,
+                async move {
+                    let _ = gio::spawn_blocking(move || connection.poll_from_worker()).await;
+                }
+            ));
+        }
     }
 
     #[glib::object_subclass]
@@ -56,7 +82,12 @@ mod imp {
     }
 
     #[glib::derived_properties]
-    impl ObjectImpl for Connection {}
+    impl ObjectImpl for Connection {
+        fn constructed(&self) {
+            self.parent_constructed();
+            *self.epoch_counter.write().unwrap() = Some(EpochCounter::new());
+        }
+    }
 }
 
 glib::wrapper! {
@@ -68,7 +99,7 @@ impl Connection {
         glib::Object::builder()
             .property("url", url)
             .property("token", token)
-            .property("available", true)
+            .property("lost", false)
             .build()
     }
 
@@ -82,14 +113,11 @@ impl Connection {
     }
 
     pub fn poll(&self) {
-        let req = ListBookmarksArgs {
-            query: Some(String::from("POLL")),
-            limit: Some(0),
-            offset: Some(0),
-            modified_since: None,
-        };
-
-        let _ = self.use_api(|api| api.list_bookmarks(req));
+        if gtk::is_initialized_main_thread() {
+            self.imp().poll_from_main();
+        } else {
+            self.imp().poll_from_worker();
+        }
     }
 
     pub fn use_api<R>(&self, operation: impl FnOnce(&LinkDingClient) -> Result<R, LinkDingError>) -> Result<R, LinkDingError> {
@@ -107,6 +135,11 @@ impl Connection {
             .clone()
             .expect("LinkDingClient should be initialized.");
 
+        let epoch = self
+            .epoch_counter()
+            .expect("epoch_counter should be initialized.")
+            .create();
+
         let ret = operation(&api);
 
         let err = ret.as_ref().map_err(|e| {
@@ -115,16 +148,18 @@ impl Connection {
         });
 
         let new_status = match err {
-            Err(ApiError::RequestFailed) => true,
+            Err(ApiError::Unreachable) => true,
             Err(_) => false,
-            Ok(_) => true,
+            Ok(_) => false,
         };
 
         glib::idle_add_once(glib::clone!(
             #[weak(rename_to = connection)]
             self.clone(),
             move || {
-                connection.set_available(new_status);
+                if epoch.is_latest() {
+                    connection.set_lost(new_status);
+                }
             }
         ));
 
@@ -137,7 +172,7 @@ impl From<&gio::Settings> for Connection {
         let object: Self = glib::Object::builder()
             .property("url", settings.get::<String>("api-url"))
             .property("token", settings.get::<String>("api-token"))
-            .property("available", true)
+            .property("lost", false)
             .build();
 
         object.bind(settings);

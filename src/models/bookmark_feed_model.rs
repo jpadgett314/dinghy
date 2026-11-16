@@ -71,10 +71,10 @@ mod imp {
         }
 
         pub fn fetch_and_splice(&self, replace: bool){
-            let Some(bookmarks) = self.obj().storage() else {
+            let Some(api) = self.obj().storage() else {
                 return;
             };
-            if bookmarks.connection().is_none() {
+            if api.connection().is_none() {
                 return;
             }
 
@@ -88,7 +88,7 @@ mod imp {
                 let epoch = model.epoch_counter().create();
 
                 let reply =
-                    gio::spawn_blocking(move || bookmarks.search(query, page, page_size))
+                    gio::spawn_blocking(move || api.search(query, page, page_size))
                         .await;
 
                 if !epoch.is_latest() {
