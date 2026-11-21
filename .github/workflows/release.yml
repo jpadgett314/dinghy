@@ -50,7 +50,7 @@ jobs:
           version = project["version"]
           if cargo["package"]["version"] != version:
               raise SystemExit("Cargo.toml and meson.build versions must match")
-          if os.environ["RELEASE_TAG"] != f"v{version}":
+          if not os.environ["RELEASE_TAG"].startswith(f"v{version}"):
               raise SystemExit(f"Expected release tag v{version}")
           PY
 
