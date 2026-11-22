@@ -6,6 +6,8 @@ Update version in `Cargo.toml` and `meson.build` (identical version strings).
 
 Format: `X.Y.Z[-modifier.#]`
 
+Ensure the change is reflected in `Cargo.lock` by running, for example, `cargo check`. 
+
 ## 2. Record release in AppStream metainfo
 
 Manually add a new `<release>` object in `data/io.github.jpadgett314.Dinghy.metainfo.xml.in`. 
@@ -15,7 +17,7 @@ Format: `X.Y.Z[~modifier.#]`
 > [!NOTE]
 > Prerelease version modifiers must use the tilde (~) to ensure that stable versions supercede them.
 
-Entries with with prerelease modifiers (`-alpha`, `-beta`) should be collapsed into the next stable release entry. 
+Entries with with prerelease modifiers (`-alpha`, `-beta`) should be collapsed into the next stable release entry.
 
 ## 3. Tag in Git
 
