@@ -49,7 +49,6 @@ just --set profile release bundle
 
 Finally, attach the bundle to the latest GitHub release.
 
-
 ## 7. 🥳
 
 # Local Release Testing 

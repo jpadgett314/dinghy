@@ -16,11 +16,11 @@ You need a running Linkding instance and an API token to connect.
 
 ## Installation
 
-Dinghy is not yet available on Flathub. Build from source to try it. 
+Download the latest version from [Releases](https://github.com/jpadgett314/dinghy/releases).
 
 Development snapshots for x86_64 are available from [CI runs](https://github.com/jpadgett314/dinghy/actions/workflows/ci.yml).
 
-*Download via GitHub Releases is coming soon!*
+*Flathub distribution is a goal for the next few months*
 
 ## Building
 
