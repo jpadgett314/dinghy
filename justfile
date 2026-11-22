@@ -15,6 +15,10 @@ setup:
     flatpak remote-add --user --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
     flatpak-builder --user --install-deps-from=flathub --install-deps-only .flatpak-build {{manifest}}
 
+# Remove the local Flatpak build directories and outputs.
+clean:
+    rm -rf -- .flatpak-builder .flatpak-build .flatpak-repo dinghy*.flatpak
+
 # Build the current checkout and export it to a local Flatpak repository.
 build:
     flatpak-builder --user --force-clean --default-branch={{branch}} --repo=.flatpak-repo .flatpak-build {{manifest}}
