@@ -1,7 +1,10 @@
-app_id := 'io.github.jpadgett314.Dinghy.Devel'
+# USAGE: just {recipe} [profile=release]
+profile := 'devel'
+
+app_id := 'io.github.jpadgett314.Dinghy' + if profile == 'release' { '' } else { '.Devel' }
 manifest := app_id + '.json'
-branch := 'devel'
-bundle_file := 'dinghy-devel.flatpak'
+branch := if profile == 'release' { 'release' } else { 'devel' }
+bundle_file := 'dinghy-' + branch + '.flatpak'
 
 # just --list
 default:
