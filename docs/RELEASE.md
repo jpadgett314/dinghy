@@ -1,24 +1,68 @@
 # Release Procedure
 
-1. Add release entry in AppStream metainfo at `data/*.metainfo.xml.in`
-2. Update version in Cargo.toml
-3. Update version in meson.build
-4. Create version tag in git: `v.X.Y.Z` (optionally also `-alpha` or `-beta`; will be marked as pre-release). 
-5. Manually dispatch "Create Release Draft" github action. 
-6. Review the draft release and publish
-7. Update Flathub manifest with the new release URL and SHA256. Currently, a copy exists in this repository.
-8. 🥳
+## 1. Bump Version
 
-# Local Release Testing
+Update version in `Cargo.toml` and `meson.build` (identical version strings). 
 
-1. With native build tools installed, run `just dist`. 
-2. Extract the archive and run Meson from that extracted source directory:
+Format: `X.Y.Z[-modifier.#]`
 
-```sh
-export CARGO_NET_OFFLINE=true
-meson setup _build --prefix="$HOME/.local" -Dprofile=default
-meson compile -C _build
+## 2. Record release in AppStream metainfo
+
+Manually add a new `<release>` object in `data/io.github.jpadgett314.Dinghy.metainfo.xml.in`. 
+
+Format: `X.Y.Z[~modifier.#]`
+
+> [!NOTE]
+> Prerelease version modifiers must use the tilde (~) to ensure that stable versions supercede them.
+
+Entries with with prerelease modifiers (`-alpha`, `-beta`) should be collapsed into the next stable release entry. 
+
+## 3. Tag in Git
+
+Commit changes, then tag the latest commit with the version in git, e.g. `git tag 'v1.2.3'`. 
+
+Format: `X.Y.Z[-modifier.#]`
+
+## 4. Publish to Github
+
+In GitHub, run the "Create Release Draft" action against the latest tag.
+
+Find the release draft. Edit it, then publish. 
+
+## 5. Publish to Flathub
+
+⚠️ WORK IN PROGRESS ⚠️
+
+## 6. Upload Bundle
+
+Locate the vendored archive attached to the GitHub release.
+
+Record the vendored archive URL and SHA256 in the release manifest `io.github.jpadgett314.Dinghy.json`.
+
+Generate the .flatpak bundle: 
+
+```
+just --set profile release bundle
 ```
 
-Alternatively, point the release Flatpak manifest at the local archive and build with `flatpak-builder --sandbox`. 
+Finally, attach the bundle to the latest GitHub release.
+
+
+## 7. 🥳
+
+# Local Release Testing 
+
+Generate the vendored archive locally:
+
+```
+just dist
+```
+
+Point the release manifest at the local archive and build:
+
+```
+just --set profile release bundle
+```
+
+Alternatively, just change the build configuration in the development manifest to `default` temporarily.
 
