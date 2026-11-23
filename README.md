@@ -54,6 +54,12 @@ meson install -C _build
 ~/.local/bin/dinghy
 ```
 
+## Roadmap
+
+See [Roadmap](https://github.com/users/jpadgett314/projects/2).
+
+For feature requests, submit an issue. All requests welcome!
+
 ## Acknowledgements
 
 Many useful techniques were learned by observing the [Pods](https://github.com/marhkb/pods) project. Also, it's been an awesome tool for managing Linkding containers.
