@@ -53,6 +53,7 @@ mod imp {
                         .map(|tag| tag.to_string())
                         .collect();
                     row.set_tag_names(glib::StrV::from(names));
+                    row.imp().entry.grab_focus_without_selecting();
                 },
             );
         }
