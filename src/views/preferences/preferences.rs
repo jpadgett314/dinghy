@@ -31,7 +31,11 @@ mod imp {
         }
     }
 
-    impl ObjectImpl for PreferencesDialog {}
+    impl ObjectImpl for PreferencesDialog {
+        fn dispose(&self) {
+            self.dispose_template();
+        }
+    }
     impl WidgetImpl for PreferencesDialog {}
     impl AdwDialogImpl for PreferencesDialog {}
     impl PreferencesDialogImpl for PreferencesDialog {}
@@ -64,4 +68,3 @@ impl PreferencesDialog {
             .build();
     }
 }
-

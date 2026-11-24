@@ -82,6 +82,10 @@ mod imp {
                 obj.add_css_class("devel");
             }
         }
+
+        fn dispose(&self) {
+            self.dispose_template();
+        }
     }
 
     impl WidgetImpl for DinghyWindow {}

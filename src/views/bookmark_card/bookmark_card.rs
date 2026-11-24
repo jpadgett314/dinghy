@@ -85,7 +85,11 @@ mod imp {
     }
 
     #[glib::derived_properties]
-    impl ObjectImpl for BookmarkCard {}
+    impl ObjectImpl for BookmarkCard {
+        fn dispose(&self) {
+            self.dispose_template();
+        }
+    }
 
     impl WidgetImpl for BookmarkCard {}
     impl BoxImpl for BookmarkCard {}
