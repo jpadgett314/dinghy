@@ -12,6 +12,12 @@
         </child>
         <child>
           <object class="AdwShortcutsItem">
+            <property name="title" translatable="yes" context="shortcut window">Refresh</property>
+            <property name="action-name">client.refresh</property>
+          </object>
+        </child>
+        <child>
+          <object class="AdwShortcutsItem">
             <property name="title" translatable="yes" context="shortcut window">Quit</property>
             <property name="action-name">app.quit</property>
           </object>
