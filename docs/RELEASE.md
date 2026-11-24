@@ -56,10 +56,10 @@ Finally, attach the bundle to the latest GitHub release.
 Generate the vendored archive locally:
 
 ```
-just dist
+just --set profile release dist
 ```
 
-Point the release manifest at the local archive and build:
+Manually point the release manifest at the local archive and build:
 
 ```
 just --set profile release bundle

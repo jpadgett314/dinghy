@@ -173,9 +173,10 @@ impl ConnectDialog {
         match error {
             ApiError::Rejected => gettext("The server rejected this API token."),
             ApiError::Unreachable => gettext("This server is unreachable or unavailable."),
-            ApiError::InvalidUrl => gettext("Enter a valid server URL, e.g. https://yourdomain.com:1234"),
+            ApiError::InvalidUrl => gettext("Enter a valid server URL, e.g. {}").replace("{}", "https://yourdomain.com:1234" ),
             ApiError::UnknownFailure => gettext("The server rejected the connection."),
             _ => String::new(),
         }
     }
 }
+

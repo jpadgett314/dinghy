@@ -10,7 +10,7 @@
     <p>Dinghy is built with libadwaita.</p>
   </description>
   <developer id="tld.vendor">
-    <name>Jacob Padgett</name>
+    <name translate="no">Jacob Padgett</name>
   </developer>
   <url type="homepage">https://github.com/jpadgett314/dinghy</url>
   <url type="vcs-browser">https://github.com/jpadgett314/dinghy</url>
@@ -54,3 +54,4 @@
     </release>
   </releases>
 </component>
+
