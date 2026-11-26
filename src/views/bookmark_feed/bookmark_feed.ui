@@ -18,20 +18,19 @@
             <property name="child">
               <object class="GtkListView" id="list">
                 <signal name="activate" handler="on_activate" swapped="yes"/>
-                <property name="valign">fill</property>
                 <property name="single-click-activate">True</property>
+                <property name="valign">fill</property>
                 <property name="model">
-                  <object class="GtkNoSelection" id="selection">
+                  <object class="GtkMultiSelection" id="selection">
                     <binding name="model">
                       <lookup name="model">BookmarkFeed</lookup>
                     </binding>
+                    <signal name="selection-changed" handler="on_selection_changed" swapped="yes"/>
                   </object>
                 </property>
                 <property name="factory">
-                  <object class="GtkSignalListItemFactory" id="factory">
-                    <signal name="bind" handler="on_bind" swapped="yes"/>
-                    <signal name="setup" handler="on_setup" swapped="yes"/>
-                    <signal name="unbind" handler="on_unbind" swapped="yes"/>
+                  <object class="GtkBuilderListItemFactory">
+                    <property name="resource">/io/github/jpadgett314/Dinghy/views/bookmark_feed/bookmark_feed_item.ui</property>
                   </object>
                 </property>
                 <style>
@@ -45,3 +44,4 @@
     </child>
   </template>
 </interface>
+

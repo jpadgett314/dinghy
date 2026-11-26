@@ -2,12 +2,15 @@ use std::cell::{OnceCell, RefCell};
 
 use adw::prelude::*;
 use adw::subclass::prelude::*;
+use gettextrs::ngettext;
 use gtk::{gio, glib};
 
 use crate::api::{BookmarkStorage, Connection};
-use crate::models::{BookmarkFeedModel, ToolbarModel};
+use crate::models::{BatchOperationModel, BookmarkFeedModel, ToolbarModel};
 use crate::util::{action_entry0, action_entry1};
-use crate::views::{AddBookmarkDialog, BookmarkFeed, EditBookmarkDialog};
+use crate::views::{
+    AddBookmarkDialog, BatchEditDialog, BatchToolbar, BookmarkFeed, EditBookmarkDialog,
+};
 
 mod imp {
     use super::*;
@@ -19,6 +22,8 @@ mod imp {
         #[property(get)]
         pub actions: gio::SimpleActionGroup,
         #[property(get, set, nullable)]
+        pub batch_operation: RefCell<Option<BatchOperationModel>>,
+        #[property(get, set, nullable)]
         pub connection: RefCell<Option<Connection>>,
         #[property(get, set, nullable)]
         pub settings: RefCell<Option<gio::Settings>>,
@@ -28,6 +33,10 @@ mod imp {
         pub bookmark_storage: OnceCell<BookmarkStorage>,
         #[property(get, set)]
         pub bookmark_feed_model: OnceCell<BookmarkFeedModel>,
+        #[template_child]
+        pub bookmark_feed: TemplateChild<BookmarkFeed>,
+        #[template_child]
+        pub delete_confirmation: TemplateChild<adw::AlertDialog>,
         #[template_child]
         pub status_stack: TemplateChild<gtk::Stack>,
     }
@@ -40,6 +49,8 @@ mod imp {
 
         fn class_init(klass: &mut Self::Class) {
             ToolbarModel::ensure_type();
+            BatchOperationModel::ensure_type();
+            BatchToolbar::ensure_type();
             BookmarkStorage::ensure_type();
             BookmarkFeedModel::ensure_type();
             BookmarkFeed::ensure_type();
@@ -76,13 +87,19 @@ glib::wrapper! {
 
 #[gtk::template_callbacks]
 impl BookmarksPage {
+    #[template_callback(function)]
+    fn should_reveal_batch_toolbar(selected_count: u32, operation_active: bool) -> bool {
+        selected_count > 0 || operation_active
+    }
+
     fn setup_gactions(&self) {
         let entries = [
-            action_entry0(
-                self,
-                "open-add-dialog",
-                Self::on_open_add_dialog_action,
-            ),
+            action_entry0(self, "open-add-dialog", Self::on_open_add_dialog_action),
+            action_entry0(self, "edit-selected", Self::on_edit_selected_action),
+            action_entry0(self, "delete-selected", Self::on_delete_selected_action),
+            action_entry0(self, "select-all", Self::on_select_all_action),
+            action_entry0(self, "clear-selection", Self::on_clear_selection_action),
+            action_entry0(self, "cancel-batch-operation", Self::on_cancel_batch_operation_action),
             action_entry1(
                 self,
                 "open-edit-dialog",
@@ -122,6 +139,101 @@ impl BookmarksPage {
 
         self.toolbar_model().set_searchbar_open(true);
         self.toolbar_model().set_query(query);
+    }
+
+    fn batch_operation_active(&self) -> bool {
+        self.batch_operation()
+            .is_some_and(|operation| operation.active())
+    }
+
+    fn on_edit_selected_action(&self) {
+        if self.batch_operation_active() {
+            return;
+        }
+
+        let bookmarks = self.imp().bookmark_feed.selected_bookmarks();
+        if bookmarks.is_empty() {
+            return;
+        }
+
+        let edit_dialog = BatchEditDialog::new(
+            glib::clone!(
+                #[weak(rename_to = page)]
+                self.clone(),
+                move |changes| {
+                    if let Some(operation) =
+                        BatchOperationModel::edit_bookmarks(page.bookmark_storage(), bookmarks, changes)
+                    {
+                        page.set_batch_operation(Some(operation));
+                    }
+                }
+            )
+        );
+
+        edit_dialog.present(Some(self));
+    }
+
+    fn on_delete_selected_action(&self) {
+        if self.batch_operation_active() {
+            return;
+        }
+
+        let count = self.imp().bookmark_feed.selected_count();
+        if count == 0 {
+            return;
+        }
+
+        let heading = ngettext("Delete Bookmark?", "Delete Bookmarks?", count);
+        let body = ngettext(
+            "This bookmark will be permanently deleted.",
+            "These %u bookmarks will be permanently deleted.",
+            count,
+        )
+        .replace("%u", &count.to_string());
+
+        let dialog = self.imp().delete_confirmation.clone();
+        dialog.set_heading(Some(&heading));
+        dialog.set_body(&body);
+        dialog.present(Some(self));
+    }
+
+    fn on_select_all_action(&self) {
+        if self.imp().bookmark_feed.is_mapped() {
+            self.imp().bookmark_feed.select_all();
+        }
+    }
+
+    fn on_clear_selection_action(&self) {
+        self.imp().bookmark_feed.clear_selection();
+    }
+
+    fn on_cancel_batch_operation_action(&self) {
+        if let Some(operation) = self.batch_operation() {
+            operation.cancel();
+        }
+    }
+
+    #[template_callback]
+    fn on_delete_confirmation_response(&self, response: &str) {
+        if response != "delete" {
+            return;
+        }
+
+        let bookmark_ids = self
+            .imp()
+            .bookmark_feed
+            .selected_bookmarks()
+            .iter()
+            .map(|bookmark| bookmark.id())
+            .collect();
+
+        let operation = BatchOperationModel::delete_bookmarks(
+            self.bookmark_storage(),
+            self.bookmark_feed_model(),
+            bookmark_ids,
+        );
+
+        self.set_batch_operation(Some(operation));
     }
 
     #[template_callback]

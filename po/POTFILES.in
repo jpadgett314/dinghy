@@ -4,9 +4,12 @@ data/io.github.jpadgett314.Dinghy.desktop.in
 data/io.github.jpadgett314.Dinghy.gschema.xml.in
 data/io.github.jpadgett314.Dinghy.metainfo.xml.in
 src/application.rs
+src/models/batch_operation_model.rs
 src/shortcuts-dialog.ui
 src/views/add_bookmark/add_bookmark.rs
 src/views/add_bookmark/add_bookmark.ui
+src/views/batch_edit/batch_edit.ui
+src/views/batch_toolbar/batch_toolbar.ui
 src/views/bookmark_feed/bookmark_feed.ui
 src/views/bookmarks_page/bookmarks_page.ui
 src/views/client/client.ui

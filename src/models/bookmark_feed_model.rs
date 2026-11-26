@@ -64,7 +64,7 @@ mod imp {
             self.fetch_and_splice(true);
         }
 
-        pub fn fetch_more(&self) {
+    pub fn fetch_more(&self) -> () {
             self.query_page.set(self.query_page.get() + 1);
 
             self.fetch_and_splice(false);
@@ -165,12 +165,26 @@ impl BookmarkFeedModel {
             .cloned()
     }
 
-    pub fn fetch_more(&self) -> () {
+    pub fn fetch_more(&self) {
         self.imp().fetch_more();
     }
 
     pub fn fetch_query(&self, query: String) {
         self.imp().fetch_query(query);
+    }
+
+    pub fn remove_by_id(&self, id: i32) {
+        let position = {
+            let mut bookmarks = self.imp().bookmark_list.borrow_mut();
+            let Some(position) = bookmarks.iter().position(|bookmark| bookmark.id() == id) else {
+                return;
+            };
+
+            bookmarks.remove(position);
+            position
+        };
+
+        self.items_changed(position as u32, 1, 0);
     }
 }
 

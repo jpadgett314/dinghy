@@ -16,6 +16,8 @@ mod imp {
     pub struct BookmarkCard {
         #[property(get, set, nullable)]
         pub model: RefCell<Option<BookmarkCardModel>>,
+        #[property(get, set, nullable)]
+        pub list_item: glib::WeakRef<gtk::ListItem>,
         #[property(get, set = Self::set_favicon, nullable)]
         pub favicon: RefCell<Option<gdk::Paintable>>,
         #[property(get, set = Self::set_tag_names)]
@@ -122,10 +124,34 @@ impl BookmarkCard {
     }
 
     #[template_callback]
+    fn on_selection_toggled(&self, button: &gtk::CheckButton) {
+        let Some(item) = self.list_item() else {
+            return;
+        };
+
+        if button.is_active() != item.is_selected() {
+            self.toggle_selection_at(item.position());
+        }
+    }
+
+    #[template_callback]
     fn on_edit_clicked(&self) {
         let Some(model) = self.model() else { return };
         let id = model.id().to_variant();
         let _ = self.activate_action("bookmarks.open-edit-dialog", Some(&id));
+    }
+}
+
+impl BookmarkCard {
+    pub fn toggle_selection(&self) {
+        if let Some(item) = self.list_item() {
+            self.toggle_selection_at(item.position());
+        }
+    }
+
+    fn toggle_selection_at(&self, position: u32) {
+        let selection = (position, true, false).to_variant();
+        let _ = self.activate_action("list.select-item", Some(&selection));
     }
 }
 

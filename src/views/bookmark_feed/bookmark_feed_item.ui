@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <requires lib="gtk" version="4.0"/>
+  <template class="GtkListItem">
+    <property name="activatable">True</property>
+    <property name="selectable">False</property>
+    <property name="child">
+      <object class="BookmarkCard">
+        <property name="list-item">GtkListItem</property>
+        <binding name="model">
+          <lookup name="item">GtkListItem</lookup>
+        </binding>
+      </object>
+    </property>
+  </template>
+</interface>
+

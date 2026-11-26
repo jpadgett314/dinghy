@@ -4,8 +4,11 @@
     <file preprocess="xml-stripblanks">shortcuts-dialog.ui</file>
     <file>style.css</file>
     <file preprocess="xml-stripblanks">views/add_bookmark/add_bookmark.ui</file>
+    <file preprocess="xml-stripblanks">views/batch_edit/batch_edit.ui</file>
+    <file preprocess="xml-stripblanks">views/batch_toolbar/batch_toolbar.ui</file>
     <file preprocess="xml-stripblanks">views/bookmark_card/bookmark_card.ui</file>
     <file preprocess="xml-stripblanks">views/bookmark_feed/bookmark_feed.ui</file>
+    <file preprocess="xml-stripblanks">views/bookmark_feed/bookmark_feed_item.ui</file>
     <file preprocess="xml-stripblanks">views/bookmark_tag/bookmark_tag.ui</file>
     <file preprocess="xml-stripblanks">views/bookmarks_page/bookmarks_page.ui</file>
     <file preprocess="xml-stripblanks">views/client/client.ui</file>

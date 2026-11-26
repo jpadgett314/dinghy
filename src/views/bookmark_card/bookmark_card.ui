@@ -26,12 +26,43 @@
       <class name="bookmark-card"/>
     </style>
     <child>
-      <object class="GtkImage" id="icon_image">
+      <object class="GtkOverlay">
         <property name="valign">start</property>
-        <property name="pixel-size">32</property>
-        <property name="icon-name">user-bookmarks-symbolic</property>
+        <property name="child">
+          <object class="GtkCheckButton">
+            <signal name="toggled" handler="on_selection_toggled" swapped="yes"/>
+            <binding name="active">
+              <lookup name="selected" type="GtkListItem">
+                <lookup name="list-item">BookmarkCard</lookup>
+              </lookup>
+            </binding>
+            <property name="halign">center</property>
+            <property name="valign">center</property>
+            <style>
+              <class name="selection-mode"/>
+              <class name="bookmark-selection-check"/>
+            </style>
+            <accessibility>
+              <property name="label" translatable="yes">Select Bookmark</property>
+              <relation name="described-by">title_label</relation>
+            </accessibility>
+          </object>
+        </property>
+        <child type="overlay">
+          <object class="GtkImage" id="icon_image">
+            <property name="halign">center</property>
+            <property name="valign">center</property>
+            <property name="can-target">False</property>
+            <property name="pixel-size">32</property>
+            <property name="icon-name">user-bookmarks-symbolic</property>
+            <style>
+              <class name="bookmark-favicon"/>
+              <class name="dim-label"/>
+            </style>
+          </object>
+        </child>
         <style>
-          <class name="dim-label"/>
+          <class name="bookmark-selection"/>
         </style>
       </object>
     </child>

@@ -1,4 +1,4 @@
-use std::cell::RefCell;
+use std::cell::{Cell, RefCell};
 
 use adw::prelude::*;
 use adw::subclass::prelude::*;
@@ -16,12 +16,12 @@ mod imp {
     pub struct BookmarkFeed {
         #[property(get, set)]
         pub model: RefCell<BookmarkFeedModel>,
+        #[property(get)]
+        pub selected_count: Cell<u32>,
         #[template_child]
         pub list: gtk::TemplateChild<gtk::ListView>,
         #[template_child]
-        pub selection: gtk::TemplateChild<gtk::NoSelection>,
-        #[template_child]
-        pub factory: gtk::TemplateChild<gtk::SignalListItemFactory>,
+        pub selection: gtk::TemplateChild<gtk::MultiSelection>,
         #[template_child]
         pub scroll_window: gtk::TemplateChild<gtk::ScrolledWindow>,
     }
@@ -33,6 +33,7 @@ mod imp {
         type ParentType = gtk::Box;
 
         fn class_init(klass: &mut Self::Class) {
+            BookmarkCard::ensure_type();
             klass.bind_template();
             klass.bind_template_instance_callbacks();
         }
@@ -69,28 +70,6 @@ impl BookmarkFeed {
     }
 
     #[template_callback]
-    fn on_setup(&self, item: &glib::Object) {
-        let item = item.downcast_ref::<gtk::ListItem>().unwrap();
-        item.set_selectable(false);
-        item.set_activatable(true);
-        item.set_child(Some(&BookmarkCard::default()));
-    }
-
-    #[template_callback]
-    fn on_bind(&self, item: &glib::Object) {
-        let item = item.downcast_ref::<gtk::ListItem>().unwrap();
-        let card = item.child().and_downcast::<BookmarkCard>().unwrap();
-        card.set_model(item.item().and_downcast::<BookmarkCardModel>().as_ref());
-    }
-
-    #[template_callback]
-    fn on_unbind(&self, item: &glib::Object) {
-        let item = item.downcast_ref::<gtk::ListItem>().unwrap();
-        let card = item.child().and_downcast::<BookmarkCard>().unwrap();
-        card.set_model(None::<&BookmarkCardModel>);
-    }
-
-    #[template_callback]
     fn on_activate(&self, position: u32) {
         if let Some(bookmark) = self
             .model()
@@ -99,5 +78,32 @@ impl BookmarkFeed {
         {
             bookmark.open(self.root().and_downcast::<gtk::Window>().as_ref());
         }
+    }
+
+    #[template_callback]
+    fn on_selection_changed(&self) {
+        let selection = self.imp().selection.selection();
+        self.imp().selected_count.replace(selection.size() as u32);
+        self.notify_selected_count();
+    }
+}
+
+impl BookmarkFeed {
+    pub fn selected_bookmarks(&self) -> Vec<BookmarkCardModel> {
+        let selection = self.imp().selection.clone();
+
+        (0..selection.n_items())
+            .filter(|position| selection.is_selected(*position))
+            .filter_map(|position| selection.item(position))
+            .filter_map(|item| item.downcast::<BookmarkCardModel>().ok())
+            .collect()
+    }
+
+    pub fn select_all(&self) {
+        self.imp().selection.select_all();
+    }
+
+    pub fn clear_selection(&self) {
+        self.imp().selection.unselect_all();
     }
 }

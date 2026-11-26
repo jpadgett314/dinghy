@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <requires lib="gtk" version="4.0"/>
+  <requires lib="Adw" version="1.9"/>
+  <template class="BatchEditDialog" parent="AdwDialog">
+    <property name="title" translatable="yes">Batch Edit</property>
+    <property name="follows-content-size">True</property>
+    <property name="child">
+      <object class="AdwToolbarView">
+        <child type="top">
+          <object class="AdwHeaderBar">
+            <property name="show-start-title-buttons">False</property>
+            <property name="show-end-title-buttons">False</property>
+            <child type="start">
+              <object class="GtkButton">
+                <property name="label" translatable="yes">Cancel</property>
+                <signal name="clicked" handler="on_cancel_clicked" swapped="yes"/>
+              </object>
+            </child>
+            <child type="end">
+              <object class="GtkButton">
+                <property name="label" translatable="yes">Apply</property>
+                <signal name="clicked" handler="on_apply_clicked" swapped="yes"/>
+                <style>
+                  <class name="suggested-action"/>
+                </style>
+              </object>
+            </child>
+          </object>
+        </child>
+        <property name="content">
+          <object class="NaturalWidthShim">
+            <property name="natural-width">540</property>
+            <property name="child">
+              <object class="AdwPreferencesPage">
+                <child>
+                  <object class="AdwPreferencesGroup">
+                    <child>
+                      <object class="AdwSwitchRow" id="replace_names">
+                        <property name="title" translatable="yes">Replace Names</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="AdwEntryRow" id="name_row">
+                        <property name="title" translatable="yes">Name</property>
+                        <property name="sensitive" bind-source="replace_names" bind-property="active" bind-flags="sync-create"/>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="AdwSwitchRow" id="replace_descriptions">
+                        <property name="title" translatable="yes">Replace Descriptions</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="AdwEntryRow" id="description_row">
+                        <property name="title" translatable="yes">Description</property>
+                        <property name="sensitive" bind-source="replace_descriptions" bind-property="active" bind-flags="sync-create"/>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="AdwComboRow" id="tag_operation">
+                        <property name="title" translatable="yes">Tag Operation</property>
+                        <property name="model">
+                          <object class="GtkStringList">
+                            <items>
+                              <item translatable="yes">Add</item>
+                              <item translatable="yes">Remove</item>
+                              <item translatable="yes">Replace All</item>
+                            </items>
+                          </object>
+                        </property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="TagEntryRow" id="tags_row">
+                        <property name="title" translatable="yes">Tags</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+              </object>
+            </property>
+          </object>
+        </property>
+      </object>
+    </property>
+  </template>
+</interface>

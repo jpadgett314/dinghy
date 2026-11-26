@@ -10,12 +10,20 @@ listview.bookmark-feed > row {
   outline: none;
 }
 
+listview.bookmark-feed > row:selected .bookmark-card {
+  background: alpha(var(--accent-bg-color), 0.16);
+}
+
 listview.bookmark-feed > row:focus-visible .bookmark-card {
   outline: 2px solid alpha(var(--accent-color), 0.5);
   outline-offset: -1px;
 }
 
 @media (prefers-contrast: more) {
+  listview.bookmark-feed > row:selected .bookmark-card {
+    background: alpha(var(--accent-bg-color), 0.25);
+  }
+
   listview.bookmark-feed > row:focus-visible .bookmark-card {
     outline-color: alpha(var(--accent-color), 0.8);
   }
@@ -25,8 +33,35 @@ listview.bookmark-feed > row:focus-visible .bookmark-card {
   padding: 16px;
 }
 
-.bookmark-card > image {
+.bookmark-selection-check,
+.bookmark-favicon {
+  transition: opacity 100ms ease-in-out;
+}
+
+.bookmark-selection {
   margin: 4px;
+}
+
+.bookmark-selection-check,
+.bookmark-selection-check check {
+  min-width: 20px;
+  min-height: 20px;
+}
+
+.bookmark-selection-check {
+  opacity: 0;
+}
+
+.bookmark-selection:hover .bookmark-selection-check,
+.bookmark-selection:focus-within .bookmark-selection-check,
+.bookmark-selection-check:checked {
+  opacity: 1;
+}
+
+.bookmark-selection:hover .bookmark-favicon,
+.bookmark-selection:focus-within .bookmark-favicon,
+.bookmark-selection-check:checked ~ .bookmark-favicon {
+  opacity: 0;
 }
 
 .bookmark-tag {
@@ -80,4 +115,3 @@ listview.bookmark-feed > row:focus-visible .bookmark-card {
   min-height: 24px;
   padding: 0;
 }
-

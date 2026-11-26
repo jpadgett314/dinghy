@@ -1,5 +1,9 @@
 #[path = "add_bookmark/add_bookmark.rs"]
 mod add_bookmark;
+#[path = "batch_edit/batch_edit.rs"]
+mod batch_edit;
+#[path = "batch_toolbar/batch_toolbar.rs"]
+mod batch_toolbar;
 #[path = "bookmark_card/bookmark_card.rs"]
 mod bookmark_card;
 #[path = "bookmark_feed/bookmark_feed.rs"]
@@ -22,6 +26,8 @@ mod welcome;
 mod window;
 
 pub use add_bookmark::AddBookmarkDialog;
+pub use batch_edit::BatchEditDialog;
+pub use batch_toolbar::BatchToolbar;
 pub use bookmark_card::BookmarkCard;
 pub use bookmark_feed::BookmarkFeed;
 pub use bookmark_tag::BookmarkTag;

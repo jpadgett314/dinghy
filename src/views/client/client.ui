@@ -8,6 +8,26 @@
     </binding>
     <property name="orientation">vertical</property>
     <child>
+      <object class="GtkShortcutController">
+        <child>
+          <object class="GtkShortcut">
+            <property name="trigger">&lt;Control&gt;a</property>
+            <property name="action">action(bookmarks.select-all)</property>
+          </object>
+        </child>
+      </object>
+    </child>
+    <child>
+      <object class="GtkShortcutController">
+        <child>
+          <object class="GtkShortcut">
+            <property name="trigger">Escape</property>
+            <property name="action">action(bookmarks.clear-selection)</property>
+          </object>
+        </child>
+      </object>
+    </child>
+    <child>
       <object class="AdwToolbarView" id="toolbar_view">
         <property name="vexpand">True</property>
         <child type="top">
@@ -140,6 +160,10 @@
       <item>
         <attribute name="label" translatable="yes">_Refresh</attribute>
         <attribute name="action">client.refresh</attribute>
+      </item>
+      <item>
+        <attribute name="label" translatable="yes">Select _All</attribute>
+        <attribute name="action">bookmarks.select-all</attribute>
       </item>
     </section>
     <section>

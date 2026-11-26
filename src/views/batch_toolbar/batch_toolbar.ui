@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <requires lib="gtk" version="4.0"/>
+  <requires lib="Adw" version="1.0"/>
+  <template class="BatchToolbar" parent="GtkBox">
+    <property name="hexpand">True</property>
+    <property name="spacing">12</property>
+    <binding name="operation-active">
+      <lookup name="active" type="BatchOperationModel">
+        <lookup name="operation">BatchToolbar</lookup>
+      </lookup>
+    </binding>
+    <style>
+      <class name="toolbar"/>
+      <class name="batch-toolbar"/>
+    </style>
+    <child>
+      <object class="GtkStack">
+        <binding name="visible-child-name">
+          <closure type="gchararray" function="status_page">
+            <lookup name="operation-active">BatchToolbar</lookup>
+          </closure>
+        </binding>
+        <property name="hexpand">True</property>
+        <property name="hhomogeneous">False</property>
+        <child>
+          <object class="GtkStackPage">
+            <property name="name">selection</property>
+            <property name="child">
+              <object class="GtkBox">
+                <property name="spacing">6</property>
+                <child>
+                  <object class="GtkButton">
+                    <signal name="clicked" handler="on_close_clicked" swapped="yes"/>
+                    <property name="icon-name">window-close-symbolic</property>
+                    <property name="tooltip-text" translatable="yes">Exit Selection</property>
+                    <style>
+                      <class name="flat"/>
+                      <class name="circular"/>
+                    </style>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkLabel">
+                    <binding name="label">
+                      <closure type="gchararray" function="selection_text">
+                        <lookup name="selected-count">BatchToolbar</lookup>
+                      </closure>
+                    </binding>
+                    <property name="xalign">0</property>
+                    <style>
+                      <class name="heading"/>
+                    </style>
+                  </object>
+                </child>
+              </object>
+            </property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkStackPage">
+            <property name="name">operation</property>
+            <property name="child">
+              <object class="GtkBox">
+                <property name="spacing">12</property>
+                <property name="margin-start">12</property>
+                <child>
+                  <object class="GtkLabel">
+                    <binding name="label">
+                      <lookup name="status" type="BatchOperationModel">
+                        <lookup name="operation">BatchToolbar</lookup>
+                      </lookup>
+                    </binding>
+                    <property name="xalign">0</property>
+                    <style>
+                      <class name="heading"/>
+                    </style>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkLabel">
+                    <binding name="label">
+                      <lookup name="progress" type="BatchOperationModel">
+                        <lookup name="operation">BatchToolbar</lookup>
+                      </lookup>
+                    </binding>
+                    <style>
+                      <class name="dim-label"/>
+                      <class name="numeric"/>
+                    </style>
+                  </object>
+                </child>
+              </object>
+            </property>
+          </object>
+        </child>
+      </object>
+    </child>
+    <child>
+      <object class="GtkProgressBar">
+        <binding name="visible">
+          <lookup name="operation-active">BatchToolbar</lookup>
+        </binding>
+        <binding name="fraction">
+          <lookup name="fraction" type="BatchOperationModel">
+            <lookup name="operation">BatchToolbar</lookup>
+          </lookup>
+        </binding>
+        <property name="valign">center</property>
+        <property name="width-request">120</property>
+      </object>
+    </child>
+    <child>
+      <object class="GtkStack">
+        <binding name="visible-child-name">
+          <closure type="gchararray" function="status_page">
+            <lookup name="operation-active">BatchToolbar</lookup>
+          </closure>
+        </binding>
+        <property name="hhomogeneous">False</property>
+        <child>
+          <object class="GtkStackPage">
+            <property name="name">selection</property>
+            <property name="child">
+              <object class="GtkBox">
+                <property name="spacing">6</property>
+                <child>
+                  <object class="GtkButton">
+                    <property name="action-name">bookmarks.edit-selected</property>
+                    <property name="icon-name">document-edit-symbolic</property>
+                    <property name="tooltip-text" translatable="yes">Batch Edit</property>
+                    <style>
+                      <class name="flat"/>
+                    </style>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkButton">
+                    <signal name="clicked" handler="on_delete_clicked" swapped="yes"/>
+                    <property name="icon-name">user-trash-symbolic</property>
+                    <property name="tooltip-text" translatable="yes">Delete Selection</property>
+                    <style>
+                      <class name="flat"/>
+                    </style>
+                  </object>
+                </child>
+              </object>
+            </property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkStackPage">
+            <property name="name">operation</property>
+            <property name="child">
+              <object class="GtkButton">
+                <signal name="clicked" handler="on_cancel_clicked" swapped="yes"/>
+                <binding name="sensitive">
+                  <closure type="gboolean" function="invert_bool">
+                    <lookup name="cancelled" type="BatchOperationModel">
+                      <lookup name="operation">BatchToolbar</lookup>
+                    </lookup>
+                  </closure>
+                </binding>
+                <property name="label" translatable="yes">_Cancel</property>
+                <property name="use-underline">True</property>
+              </object>
+            </property>
+          </object>
+        </child>
+      </object>
+    </child>
+  </template>
+</interface>
