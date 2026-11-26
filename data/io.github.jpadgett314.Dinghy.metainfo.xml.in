@@ -40,7 +40,7 @@
     </screenshot>
   </screenshots>
   <releases>
-    <release version="0.1.0~beta.1" type="development" date="2026-11-21">
+    <release version="0.1.0" date="2026-11-26">
       <description translate="no">
         <p>Initial release. Features include:</p>
         <ul>
