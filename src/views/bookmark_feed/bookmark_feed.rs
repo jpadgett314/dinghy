@@ -21,6 +21,8 @@ mod imp {
         #[template_child]
         pub list: gtk::TemplateChild<gtk::ListView>,
         #[template_child]
+        pub select_focused_shortcut: gtk::TemplateChild<gtk::Shortcut>,
+        #[template_child]
         pub selection: gtk::TemplateChild<gtk::MultiSelection>,
         #[template_child]
         pub scroll_window: gtk::TemplateChild<gtk::ScrolledWindow>,
@@ -45,6 +47,20 @@ mod imp {
 
     #[glib::derived_properties]
     impl ObjectImpl for BookmarkFeed {
+        fn constructed(&self) {
+            self.parent_constructed();
+            self.select_focused_shortcut.set_action(Some(
+                gtk::CallbackAction::new(
+                    |widget, _| {
+                        widget.downcast_ref::<super::BookmarkFeed>().map_or(
+                            glib::Propagation::Proceed,
+                            super::BookmarkFeed::on_select,
+                        )
+                    }
+                )
+            ));
+        }
+
         fn dispose(&self) {
             self.dispose_template();
         }
@@ -70,6 +86,13 @@ impl BookmarkFeed {
     }
 
     #[template_callback]
+    fn on_selection_changed(&self) {
+        let selection = self.imp().selection.selection();
+        self.imp().selected_count.replace(selection.size() as u32);
+        self.notify_selected_count();
+    }
+
+    #[template_callback]
     fn on_activate(&self, position: u32) {
         if let Some(bookmark) = self
             .model()
@@ -80,11 +103,20 @@ impl BookmarkFeed {
         }
     }
 
-    #[template_callback]
-    fn on_selection_changed(&self) {
-        let selection = self.imp().selection.selection();
-        self.imp().selected_count.replace(selection.size() as u32);
-        self.notify_selected_count();
+    fn on_select(&self) -> glib::Propagation {
+        if let Some(card) = self
+            .imp()
+            .list
+            .focus_child()
+            .filter(|row| row.is_focus())
+            .and_then(|row| row.first_child())
+            .and_downcast::<BookmarkCard>()
+        {
+            card.toggle_selection();
+            glib::Propagation::Stop
+        } else {
+            glib::Propagation::Proceed
+        }
     }
 }
 
