@@ -11,7 +11,7 @@ listview.bookmark-feed > row {
 }
 
 listview.bookmark-feed > row:selected .bookmark-card {
-  background: alpha(var(--accent-bg-color), 0.16);
+  background-color: color-mix(in srgb, var(--card-bg-color), var(--accent-bg-color) 16%);
 }
 
 listview.bookmark-feed > row:focus-visible .bookmark-card {
@@ -21,7 +21,7 @@ listview.bookmark-feed > row:focus-visible .bookmark-card {
 
 @media (prefers-contrast: more) {
   listview.bookmark-feed > row:selected .bookmark-card {
-    background: alpha(var(--accent-bg-color), 0.25);
+    background-color: color-mix(in srgb, var(--card-bg-color), var(--accent-bg-color) 25%);
   }
 
   listview.bookmark-feed > row:focus-visible .bookmark-card {
